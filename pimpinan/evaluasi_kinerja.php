@@ -26,7 +26,7 @@ function generate_stars($score)
 
 // === 2. AMBIL DATA UNTUK TABEL DETAIL DENGAN PAGINASI ===
 $limit = 5;
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
 $offset = ($page - 1) * $limit;
 
 $count_query = $koneksi->query("SELECT COUNT(*) as total FROM tblevaluasikinerja");
@@ -278,11 +278,9 @@ $stmt->close();
             });
         };
 
-        window.exportData = () => Swal.fire({
-            ...swalWithTailwind,
-            icon: 'info',
-            title: 'Fungsi Dalam Pengembangan'
-        });
+        window.exportData = () => {
+            window.open('pimpinan/export_excel.php?action=export_evaluasi_kinerja', '_blank');
+        };
 
         // === Event Listeners ===
         document.addEventListener('DOMContentLoaded', loadRadarChart);

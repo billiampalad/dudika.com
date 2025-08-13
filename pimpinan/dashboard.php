@@ -1,4 +1,5 @@
 <?php
+
 // FUNGSI UNTUK MENJALANKAN QUERY DAN MENGAMBIL SATU NILAI
 function getSingleValue($koneksi, $sql, $default = 0)
 {
@@ -45,8 +46,12 @@ $notifikasi_mou = getMultipleRows($koneksi, $sql_notifikasi_mou);
 
 
 // -- 3. DATA UNTUK CHART --
-// Trend Kerjasama (Line Chart)
-$sql_trend = "SELECT DATE_FORMAT(dtMulaiPelaksanaan, '%b %Y') as bulan, COUNT(*) as jumlah FROM tblnamakegiatanks WHERE dtMulaiPelaksanaan >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH) GROUP BY DATE_FORMAT(dtMulaiPelaksanaan, '%Y-%m') ORDER BY DATE_FORMAT(dtMulaiPelaksanaan, '%Y-%m') ASC";
+// Trend Kerjasama (Line Chart) - DIPERBAIKI
+$sql_trend = "SELECT DATE_FORMAT(dtMulaiPelaksanaan, '%b %Y') as bulan, COUNT(*) as jumlah 
+              FROM tblnamakegiatanks 
+              WHERE dtMulaiPelaksanaan >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH) 
+              GROUP BY DATE_FORMAT(dtMulaiPelaksanaan, '%Y-%m'), DATE_FORMAT(dtMulaiPelaksanaan, '%b %Y')
+              ORDER BY DATE_FORMAT(dtMulaiPelaksanaan, '%Y-%m') ASC";
 $trend_kerjasama = getMultipleRows($koneksi, $sql_trend);
 
 // Distribusi Jenis Kerjasama (Pie Chart)
@@ -74,14 +79,40 @@ $json_top_5_mitra = json_encode($top_5_mitra);
                 <p class="text-sm text-gray-500 mt-1">Ringkasan statistik dan aktivitas terbaru</p>
             </div>
             <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-                <button class="btn-export bg-gradient-to-r from-emerald-600 to-green-500 text-white px-5 py-2.5 rounded-lg hover:opacity-90 transition-all flex items-center space-x-2 shadow hover:shadow-md active:scale-[0.98] w-full sm:w-auto justify-center">
-                    <i class="fas fa-download mr-2 text-sm"></i>
-                    Export Data
-                </button>
-                <button id="addDataBtn" class="btn-primary bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-5 py-2.5 rounded-lg hover:opacity-90 transition-all flex items-center space-x-2 shadow hover:shadow-md active:scale-[0.98] w-full sm:w-auto justify-center">
-                    <i class="fas fa-plus mr-2 text-sm"></i>
-                    Tambah Data
-                </button>
+                <!-- <div
+                    class="relative inline-block text-left group">
+                    <button
+                        class="btn-export bg-gradient-to-r from-emerald-600 to-green-500 text-white px-5 py-2.5 rounded-lg hover:opacity-90 transition-all flex items-center space-x-2 shadow hover:shadow-md active:scale-[0.98] w-full sm:w-auto justify-center">
+                        <i class="fas fa-download mr-2 text-sm"></i>
+                        Export Data
+                    </button>
+
+                    <div
+                        class="absolute mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                        <a href="http://localhost/wd4/pimpinan.php?page=mitra" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Mitra Kerjasama</a>
+                        <a href="http://localhost/wd4/pimpinan.php?page=jenis_kerjasama" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Jenis Kerjasama</a>
+                        <a href="http://localhost/wd4/pimpinan.php?page=unit_pelaksana" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Unit Pelaksana</a>
+                    </div>
+                </div> -->
+
+                <div class="relative inline-block text-left group">
+                    <!-- Tombol Tambah Data -->
+                    <button
+                        id="addDataBtn"
+                        class="btn-primary bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-5 py-2.5 rounded-lg hover:opacity-90 transition-all flex items-center space-x-2 shadow hover:shadow-md active:scale-[0.98] w-full sm:w-auto justify-center">
+                        <i class="fas fa-eye mr-2 text-sm"></i>
+                        Lihat Data
+                    </button>
+
+                    <!-- Dropdown menu saat hover -->
+                    <div
+                        class="absolute mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                        <a href="http://localhost/wd4/pimpinan.php?page=mitra" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Tambah Mitra Kerjasama</a>
+                        <a href="http://localhost/wd4/pimpinan.php?page=jenis_kerjasama" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Tambah Jenis Kerjasama</a>
+                        <a href="http://localhost/wd4/pimpinan.php?page=jenis_kerjasama" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Tambah Unit Pelaksana</a>
+                        <a href="http://localhost/wd4/pimpinan.php?page=program_kerjasama" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Tambah Program Kerjasama</a>
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -223,8 +254,6 @@ $json_top_5_mitra = json_encode($top_5_mitra);
         </div>
     </div>
 </main>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

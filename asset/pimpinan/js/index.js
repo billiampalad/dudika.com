@@ -1,11 +1,7 @@
 
 document.addEventListener('DOMContentLoaded', function () {
-
-    // === ELEMEN DOM & VARIABEL GLOBAL ===
-    // Mengumpulkan semua elemen yang dibutuhkan di satu tempat
-    let activeElementBeforeModal;
-
-    // Elemen UI & Layout
+    // === ELEMEN DOM ===
+    // Mengumpulkan semua elemen yang dibutuhkan di satu tempat untuk efisiensi.
     const sidebar = document.getElementById('sidebar');
     const sidebarToggle = document.getElementById('sidebarToggle');
     const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -15,17 +11,16 @@ document.addEventListener('DOMContentLoaded', function () {
     const dataMasterDropdown = document.getElementById('dataMasterDropdown');
     const dataMasterIcon = document.getElementById('dataMasterIcon');
     const darkModeToggle = document.getElementById('darkModeToggle');
-    const fab = document.getElementById('fab'); // Tombol Tambah Floating
-    const logoutBtn = document.getElementById('logoutBtn'); // Asumsi ada tombol dengan id ini
 
-    // Elemen Modal & Form
+    // Asumsi elemen modal ada di halaman tertentu (seperti di skrip asli)
     const addModal = document.getElementById('addModal');
-    const addModalContent = document.getElementById('modalContent');
-    const addDataForm = document.getElementById('addDataForm');
-    const editModal = document.getElementById('editModal');
-    const editModalContent = document.getElementById('editModalContent');
-    const editDataForm = document.getElementById('editDataForm');
+    const fab = document.getElementById('fab');
+    const addDataBtn = document.getElementById('addDataBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const cancelModalBtn = document.getElementById('cancelModalBtn');
 
+    // Variabel untuk menyimpan elemen yang aktif sebelum modal dibuka (untuk aksesibilitas)
+    let activeElementBeforeModal;
 
     // === KONFIGURASI GLOBAL ===
     // Pengaturan global untuk SweetAlert2 dengan gaya Tailwind
@@ -79,7 +74,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const toggleSidebar = () => {
         if (sidebar && sidebarOverlay) {
             sidebar.classList.toggle('-translate-x-full');
-            sidebar.classList.toggle('translate-x-0');
             sidebarOverlay.classList.toggle('hidden');
         }
     };
@@ -303,25 +297,6 @@ document.addEventListener('DOMContentLoaded', function () {
             notificationDropdown.classList.add('hidden');
         }
     });
-
-    // --- Logout ---
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            Swal.fire({
-                ...swalWithTailwind,
-                title: 'Konfirmasi Logout',
-                text: "Apakah Anda yakin ingin keluar?",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Ya, Logout',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = 'logout.php';
-                }
-            });
-        });
-    }
 
     // Membuat fungsi global agar bisa diakses dari `onclick` di HTML
     window.showModal = showModal;

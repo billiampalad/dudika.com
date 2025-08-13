@@ -11,7 +11,6 @@ if (isset($_SESSION['login_error'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nik = $_POST['nik'] ?? '';
     $password = $_POST['password'] ?? '';
-    // 1. Ambil nilai provider dan ubah ke huruf kecil
     $provider = strtolower($_POST['provider'] ?? '');
 
     // Validasi input dasar
@@ -28,40 +27,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
-    // 2. Ubah query SQL untuk memeriksa 'role' juga
     $sql = "SELECT nik, password, role FROM tbluser WHERE nik=? AND role=? LIMIT 1";
     $stmt = $koneksi->prepare($sql);
-
-    // 3. Sesuaikan bind_param menjadi "ss" untuk dua string (nik dan provider)
     $stmt->bind_param("ss", $nik, $provider);
     $stmt->execute();
     $result = $stmt->get_result();
 
     if ($row = $result->fetch_assoc()) {
-        if ($password == $row['password']) {
-            // Login sukses
+        // Pengguna dengan NIK dan Role yang sesuai ditemukan. Sekarang verifikasi passwordnya.
+
+        // ===================================================================
+        // PERBAIKAN 1 (KRITIS): Gunakan password_verify() untuk mencocokkan hash
+        // ===================================================================
+        if (password_verify($password, $row['password'])) {
+            // Login sukses, password cocok.
+
+            // ===================================================================
+            // PERBAIKAN 2 (BEST PRACTICE): Regenerasi ID sesi untuk keamanan
+            // ===================================================================
+            session_regenerate_id(true);
+
             $_SESSION['nik'] = $row['nik'];
             $_SESSION['role'] = $row['role'];
 
+            // Hapus pesan error jika ada dari percobaan sebelumnya
             unset($_SESSION['login_error']);
 
+            // Arahkan sesuai role
             if ($row['role'] == 'polimdo') {
                 header("Location: pimpinan.php");
             } else {
                 header("Location: user.php");
             }
             exit();
-        } else {
-            $_SESSION['login_error'] = 'Kombinasi NIK, Password, atau Provider salah!';
-            header("Location: index.php");
-            exit();
         }
-    } else {
-        // User tidak ditemukan dengan NIK dan Role tersebut
-        $_SESSION['login_error'] = 'Kombinasi NIK, Password, atau Provider salah!';
-        header("Location: index.php");
-        exit();
     }
+
+    // Jika kode sampai di sini, berarti:
+    // 1. User dengan NIK & Role tersebut tidak ada, ATAU
+    // 2. Password salah.
+    // Pesan errornya harus sama untuk keduanya agar tidak membocorkan informasi.
+    $_SESSION['login_error'] = 'Kombinasi NIK, Password, atau Provider salah!';
+    header("Location: index.php");
+    exit();
+
+    // Baris ini tidak akan pernah dijangkau, tapi baik untuk ada
     $stmt->close();
     $koneksi->close();
 }
@@ -211,7 +221,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <!-- Provider -->
                         <div class="relative group" x-data="{ open: false, selected: 'MITRA' }" @click.outside="open = false">
                             <label for="provider" class="text-sm sm:text-base font-medium text-gray-700 mb-1 sm:mb-2 block">
-                                <i class="fas fa-network-wired text-primary-red mr-2"></i>Provider
+                                <i class="fas fa-network-wired text-primary-red mr-2"></i>User
                             </label>
 
                             <!-- Trigger Button -->

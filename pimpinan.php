@@ -2,33 +2,27 @@
 session_start();
 include __DIR__ . '/config/koneksi.php';
 
-if (!isset($_SESSION['user'])) {
-    $_SESSION['user'] = [
-        'nama' => 'Pimpinan', // Bisa diambil dari database tblusers jika ada
-        'role' => 'Administrator',
-        'foto' => 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face'
-    ];
-}
-$user = $_SESSION['user'];
-
-$query_notifikasi = "SELECT ps.txtKendala, nk.txtNamaKegiatanKS
-                    FROM tblpermasalahandansolusi ps
-                    JOIN tblnamakegiatanks nk ON ps.IdKKS = nk.IdKKS
-                    ORDER BY ps.IdMslhDanSolusi DESC
-                    LIMIT 3";
-$result_notifikasi = mysqli_query($koneksi, $query_notifikasi);
-$notifikasi_list = [];
-if ($result_notifikasi) {
-    while ($row = mysqli_fetch_assoc($result_notifikasi)) {
-        $notifikasi_list[] = $row;
-    }
+if (!isset($_SESSION['nik'])) {
+    header('Location: index.php');
+    exit;
 }
 
-$notif_count = count($notifikasi_list); // Jumlah notifikasi sesuai data yang diambil
+$query = "SELECT nama_lengkap, role FROM tbluser WHERE nik = ?";
+$stmt = $koneksi->prepare($query);
+$stmt->bind_param("s", $_SESSION['nik']);
+$stmt->execute();
+$result = $stmt->get_result();
+$user = $result->fetch_assoc();
+$stmt->close();
 
-// --- Logika Navigasi (Tidak diubah) ---
-$current_page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
-$valid_pages = ['dashboard', 'mitra', 'jenis_kerjasama', 'unit_pelaksana', 'program_kerjasama', 'jurusan', 'hasil_capaian', 'evaluasi_kinerja', 'permasalahan_solusi'];
+if (!$user) {
+    session_destroy();
+    header('Location: index.php');
+    exit;
+}
+
+$current_page = $_GET['page'] ?? 'dashboard';
+$valid_pages = ['dashboard', 'mitra', 'jenis_kerjasama', 'unit_pelaksana', 'program_kerjasama', 'hasil_capaian', 'evaluasi_kinerja', 'permasalahan_solusi'];
 if (!in_array($current_page, $valid_pages)) {
     $current_page = 'dashboard';
 }
@@ -39,6 +33,7 @@ $is_data_master_page_active = in_array($current_page, $data_master_pages);
 
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -52,7 +47,7 @@ $is_data_master_page_active = in_array($current_page, $data_master_pages);
             }
         })();
     </script>
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="asset/pimpinan/css/style.css">
@@ -64,88 +59,30 @@ $is_data_master_page_active = in_array($current_page, $data_master_pages);
     <nav class="fixed nav-gradient w-full top-0 z-50 shadow-lg">
         <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
             <div class="flex justify-between items-center h-16 sm:h-20">
-                <div class="flex items-center space-x-2 sm:space-x-4">
-                    <button id="sidebarToggle" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-colors hover:bg-gray-200/60 dark:hover:bg-slate-700/60 lg:hidden">
-                        <i class="fa-solid fa-bars-staggered text-gray-600 dark:text-slate-300 text-sm sm:text-lg"></i>
+                <div class="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
+                    <button id="sidebarToggle" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-colors hover:bg-gray-200/60 dark:hover:bg-slate-700/60 lg:hidden">
+                        <i class="fa-solid fa-bars-staggered text-gray-600 dark:text-slate-300 text-xs sm:text-sm"></i>
                     </button>
-                    <div class="logo-container background-icon w-8 h-8 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center">
-                        <img src="asset/logo.png" alt="Logo" class="w-6 h-6 sm:w-8 sm:h-8">
+                    <div class="logo-container background-icon w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center">
+                        <img src="asset/logo.png" alt="Logo" class="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7">
                     </div>
-                    <div class="hidden sm:block">
-                        <h1 class="text-lg sm:text-xl font-bold text-gray-800">POLIMDO & DUDIKA</h1>
-                        <p class="text-xs text-gray-600 hidden md:block">Sistem Informasi Kerjasama</p>
-                    </div>
-                    <div class="block sm:hidden">
-                        <h1 class="text-sm font-bold text-gray-800">POLIMDO</h1>
+                    <div class="block">
+                        <h1 class="text-sm sm:text-base md:text-lg font-bold text-gray-800">POLIMDO & DUDIKA</h1>
+                        <p class="text-xs sm:text-xs text-gray-600">Sistem Informasi Kerjasama</p>
                     </div>
                 </div>
 
-                <div class="flex items-center space-x-1 sm:space-x-3">
-                    <button id="darkModeToggle" class="nav-button w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center">
-                        <i class="fas fa-moon text-gray-600 text-sm sm:text-base"></i>
+                <div class="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
+                    <button id="darkModeToggle" class="nav-button w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center">
+                        <i class="fas fa-moon text-gray-600 text-xs sm:text-sm"></i>
                     </button>
-                    
-                    <div class="relative">
-                        <button id="notificationBtn" class="nav-button w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center relative">
-                            <i class="fas fa-bell text-gray-600 text-sm sm:text-base"></i>
-                            <span class="notification-badge absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 rounded-full text-xs text-white flex items-center justify-center font-bold">
-                                3
-                            </span>
-                        </button>
-                        
-                        <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-72 sm:w-80 bg-white rounded-2xl shadow-xl py-2 z-50 dropdown-animation">
-                            <div class="px-4 py-3 border-b border-gray-200">
-                                <h3 class="font-semibold text-gray-800">Notifikasi</h3>
-                            </div>
-                            <div class="max-h-64 overflow-y-auto">
-                                <div class="px-4 py-3 hover:bg-gray-50 transition-colors">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                                            <i class="fas fa-handshake text-white text-xs"></i>
-                                        </div>
-                                        <div class="flex-1">
-                                            <p class="text-sm font-medium text-gray-800">Kerjasama Baru</p>
-                                            <p class="text-xs text-gray-600">PT ABC mengajukan proposal</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="px-4 py-3 hover:bg-gray-50 transition-colors">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center">
-                                            <i class="fas fa-check text-white text-xs"></i>
-                                        </div>
-                                        <div class="flex-1">
-                                            <p class="text-sm font-medium text-gray-800">Evaluasi Selesai</p>
-                                            <p class="text-xs text-gray-600">Evaluasi Q1 telah selesai</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="px-4 py-3 hover:bg-gray-50 transition-colors">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center">
-                                            <i class="fas fa-exclamation text-white text-xs"></i>
-                                        </div>
-                                        <div class="flex-1">
-                                            <p class="text-sm font-medium text-gray-800">Deadline Mendekat</p>
-                                            <p class="text-xs text-gray-600">Laporan harus diserahkan besok</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
                     <div class="flex items-center space-x-2 sm:space-x-3">
-                        <div class="profile-container">
-                            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face" 
-                                alt="Profile" class="profile-img w-8 h-8 sm:w-10 sm:h-10 rounded-full">
+                        <div class="block">
+                            <span class="text-xs sm:text-sm font-semibold text-gray-800"><?php echo htmlspecialchars($user['nama_lengkap']); ?></span>
+                            <p class="text-[10px] sm:text-xs text-gray-600">Wakil Direktur 4</p>
                         </div>
-                        <div class="hidden md:block">
-                            <span class="text-sm font-semibold text-gray-800">Pimpinan</span>
-                            <p class="text-xs text-gray-600">Administrator</p>
-                        </div>
-                        <button onclick="logout()" class="nav-button w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-red-500 hover:bg-red-50">
-                            <i class="fas fa-sign-out-alt text-sm sm:text-base"></i>
+                        <button id="logoutBtn" class="nav-button w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center text-red-500 hover:bg-red-50">
+                            <i class="fas fa-sign-out-alt text-xs sm:text-sm"></i>
                         </button>
                     </div>
                 </div>
@@ -173,7 +110,7 @@ $is_data_master_page_active = in_array($current_page, $data_master_pages);
                         </div>
                         <i id="dataMasterIcon" class="fas fa-chevron-down icon-rotate transition-transform text-sm <?php echo $is_data_master_page_active ? 'rotated' : ''; ?>"></i>
                     </button>
-                    
+
                     <div id="dataMasterDropdown" class="mt-1 sm:mt-2 ml-3 sm:ml-4 space-y-1 <?php echo !$is_data_master_page_active ? 'hidden' : ''; ?>">
                         <a href="?page=mitra" class="menu-item submenu-item block pl-2 sm:pl-3 pr-3 sm:pr-4 py-3 sm:py-1.5 rounded-lg text-gray-600 hover:text-gray-800 flex items-center space-x-2 sm:space-x-3 <?php echo ($current_page == 'mitra') ? 'active' : ''; ?>">
                             <div class="w-6 sm:w-8 flex justify-center">
@@ -229,7 +166,7 @@ $is_data_master_page_active = in_array($current_page, $data_master_pages);
         <main class="lg:ml-64 flex-1 transition-all duration-300 ease-in-out">
             <div class="rounded-lg shadow p-3 sm:p-4 lg:p-6 mx-2 sm:mx-3 lg:mx-0">
                 <?php
-                switch($current_page) {
+                switch ($current_page) {
                     case 'dashboard':
                         include 'pimpinan/dashboard.php';
                         break;
@@ -262,6 +199,176 @@ $is_data_master_page_active = in_array($current_page, $data_master_pages);
         </main>
     </div>
 
-    <script src="asset/pimpinan/js/index.js"></script>
+    <script>
+        // --- General Functions ---
+        function logout() {
+            alert('Anda akan segera logout.');
+            // Implement actual logout logic here
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+
+            // --- RESPONSIVE CHANGE: Sidebar Toggle Logic ---
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const logoutBtn = document.getElementById("logoutBtn");
+
+            const toggleSidebar = () => {
+                sidebar.classList.toggle('-translate-x-full');
+                sidebar.classList.toggle('translate-x-0');
+                sidebarOverlay.classList.toggle('hidden');
+            };
+
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleSidebar();
+                });
+            }
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleSidebar();
+                });
+            }
+            // --- END RESPONSIVE CHANGE ---
+
+            // --- Notification Dropdown Logic ---
+            const notificationBtn = document.getElementById('notificationBtn');
+            const notificationDropdown = document.getElementById('notificationDropdown');
+
+            function toggleNotifications() {
+                notificationDropdown.classList.toggle('hidden');
+            }
+
+            if (notificationBtn) {
+                notificationBtn.addEventListener('click', function(event) {
+                    event.stopPropagation();
+                    toggleNotifications();
+                });
+            }
+
+            // --- Sidebar Dropdown Logic (Hanya untuk interaksi klik) ---
+            const dataMasterBtn = document.getElementById('dataMasterBtn');
+            const dataMasterDropdown = document.getElementById('dataMasterDropdown');
+            const dataMasterIcon = document.getElementById('dataMasterIcon');
+
+            if (dataMasterBtn) {
+                dataMasterBtn.addEventListener('click', () => {
+                    // Javascript tetap berfungsi untuk toggle saat diklik manual
+                    dataMasterDropdown.classList.toggle('hidden');
+                    dataMasterIcon.classList.toggle('rotated');
+                });
+            }
+
+            // --- Modal Logic ---
+            const addModal = document.getElementById('addModal');
+            const fab = document.getElementById('fab');
+            const addDataBtn = document.getElementById('addDataBtn');
+            const closeModalBtn = document.getElementById('closeModalBtn');
+            const cancelModalBtn = document.getElementById('cancelModalBtn');
+
+            function showAddModal() {
+                if (addModal) addModal.classList.remove('hidden');
+            }
+
+            function hideAddModal() {
+                if (addModal) addModal.classList.add('hidden');
+            }
+
+            // Cek elemen sebelum menambahkan event listener
+            if (fab) fab.addEventListener('click', showAddModal);
+            if (addDataBtn) addDataBtn.addEventListener('click', showAddModal);
+            if (closeModalBtn) closeModalBtn.addEventListener('click', hideAddModal);
+            if (cancelModalBtn) cancelModalBtn.addEventListener('click', hideAddModal);
+
+            // Close modal on escape key press
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && addModal && !addModal.classList.contains('hidden')) {
+                    hideAddModal();
+                }
+            });
+
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function(event) {
+                // Close notification dropdown
+                if (notificationDropdown && !notificationDropdown.classList.contains('hidden') && !notificationBtn.contains(event.target)) {
+                    notificationDropdown.classList.add('hidden');
+                }
+            });
+
+            // --- Dark Mode Toggle Logic ---
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const themeIcon = darkModeToggle.querySelector('i');
+
+            // Fungsi untuk menerapkan tema dan menyimpan pilihan
+            const applyTheme = (theme) => {
+                if (theme === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    themeIcon.classList.remove('fa-moon');
+                    themeIcon.classList.add('fa-sun');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    document.documentElement.removeAttribute('data-theme');
+                    themeIcon.classList.remove('fa-sun');
+                    themeIcon.classList.add('fa-moon');
+                    localStorage.setItem('theme', 'light');
+                }
+            };
+
+            // Event listener untuk tombol toggle
+            darkModeToggle.addEventListener('click', () => {
+                const currentTheme = localStorage.getItem('theme') || 'light';
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                applyTheme(newTheme);
+            });
+
+            // Terapkan tema yang tersimpan saat halaman pertama kali dimuat
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            applyTheme(savedTheme);
+
+            const swalWithTailwind = Swal.mixin({
+                customClass: {
+                    confirmButton: 'bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded',
+                    cancelButton: 'bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded'
+                },
+                buttonsStyling: false
+            });
+
+            logoutBtn.addEventListener('click', () => {
+                Swal.fire({
+                    title: '<i class="fas fa-sign-out-alt text-red-500 mr-2"></i>Konfirmasi Logout',
+                    html: "<p class='text-gray-700 text-sm'>Apakah Anda yakin ingin keluar dari sistem?</p>",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="fas fa-check-circle mr-1"></i> Ya, Logout',
+                    cancelButtonText: '<i class="fas fa-times-circle mr-1"></i> Batal',
+                    customClass: {
+                        popup: 'text-sm max-w-md p-6 shadow-xl rounded-xl border border-gray-200',
+                        title: 'text-lg font-semibold text-gray-800 flex items-center',
+                        htmlContainer: 'mt-2',
+                        actions: 'space-x-4 mt-5',
+                        confirmButton: 'text-sm px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow transition-all',
+                        cancelButton: 'text-sm px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-lg transition-all'
+                    },
+                    buttonsStyling: false,
+                    showClass: {
+                        popup: 'animate__animated animate__fadeInDown animate__faster'
+                    },
+                    hideClass: {
+                        popup: 'animate__animated animate__fadeOutUp animate__faster'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Arahkan ke file logout.php
+                        window.location.href = 'logout.php';
+                    }
+                });
+            });
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
+
 </html>

@@ -1,6 +1,6 @@
 <?php
 $limit = 5; // Jumlah data per halaman
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
 $offset = ($page - 1) * $limit;
 
 // Query untuk menghitung total data
@@ -170,7 +170,7 @@ $stmt->close();
 
     // === Fungsi Backend Communication ===
     const apiCall = async (action, options = {}) => {
-        const url = `capaian_action.php?action=${action}`;
+        const url = `pimpinan/hasil_capaian_action.php?action=${action}`;
         try {
             const response = await fetch(url, options);
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -205,7 +205,7 @@ $stmt->close();
     
     // === Fungsi Halaman ===
     function exportData() {
-        Swal.fire({ ...swalWithTailwind, icon: 'info', title: 'Fungsi Dalam Pengembangan', text: 'Fitur export data ke Excel akan segera tersedia!' });
+        window.open('pimpinan/export_excel.php?action=export_hasil_capaian', '_blank');
     }
 
     async function saveNote() {

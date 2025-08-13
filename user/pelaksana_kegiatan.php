@@ -1,3 +1,42 @@
+<?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+$query = "SELECT
+    nk.IdKKS,
+    nk.txtNamaKegiatanKS,
+    nk.dtMulaiPelaksanaan,
+    nk.dtSelesaiPelaksanaan,
+    SUM(p.intJumlahPeserta) as jumlah_peserta,
+    d.pathFoto as bukti_pelaksanaan,
+    jk.txtNamaJenisKS
+FROM tblnamakegiatanks nk
+LEFT JOIN tblpelaksanaankeg p ON nk.IdKKS = p.IdKKS
+LEFT JOIN tbldokumentasi d ON nk.idDokumentasi = d.idDokumentasi
+LEFT JOIN tbljenisks jk ON nk.IdJenisKS = jk.IdJenisKS
+GROUP BY nk.IdKKS
+ORDER BY nk.dtMulaiPelaksanaan DESC;";
+
+$result = mysqli_query($koneksi, $query);
+$programs = [];
+if ($result) {
+    while ($row = mysqli_fetch_assoc($result)) {
+        $programs[] = $row;
+    }
+}
+
+// Function to format date
+function formatDate($date) {
+    return date('d M Y', strtotime($date));
+}
+
+// Function to check if file exists
+function hasBuktiPelaksanaan($blobData) {
+    return !empty($blobData);
+}
+?>
+
 <div>
     <!-- Search and Export Row -->
     <div class="flex flex-row justify-between items-center mb-3 sm:mb-4 gap-3 sm:gap-4">
@@ -28,55 +67,38 @@
                 </tr>
             </thead>
             <tbody class="divide-y divide-[var(--border)]">
-                <!-- Row 1 -->
+                <?php foreach ($programs as $program): ?>
                 <tr class="hover:bg-[var(--background)] transition-colors">
                     <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium text-[var(--text-dark)] whitespace-nowrap">
-                        Magang Mahasiswa Batch 5
+                        <?= htmlspecialchars($program['txtNamaKegiatanKS']) ?>
                     </td>
                     <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-xs sm:text-sm text-[var(--text-light)] whitespace-nowrap">
-                        01 Feb 2025 - 31 Jul 2025
+                        <?= formatDate($program['dtMulaiPelaksanaan']) ?> - <?= formatDate($program['dtSelesaiPelaksanaan']) ?>
                     </td>
                     <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-xs sm:text-sm text-[var(--text-light)] text-center">
-                        15
+                        <?= $program['jumlah_peserta'] ?? 0 ?>
                     </td>
                     <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
+                        <?php if (hasBuktiPelaksanaan($program['bukti_pelaksanaan'])): ?>
                         <span class="flex items-center text-[var(--secondary)] font-medium">
                             <i class="fas fa-check-circle text-xs sm:text-sm mr-1 sm:mr-2"></i>
-                            Laporan_Magang_B5.pdf
+                            Dokumentasi_<?= htmlspecialchars($program['IdKKS']) ?>.pdf
                         </span>
-                    </td>
-                    <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-center">
-                        <button onclick="showLaporanModal(1)" title="Detail & Lapor"
-                            class="p-1 sm:p-2 rounded-md bg-[var(--accent)] text-[var(--primary)] hover:bg-[var(--primary)]/20 transition shadow-sm">
-                            <i class="fas fa-file-alt text-xs sm:text-sm"></i>
-                        </button>
-                    </td>
-                </tr>
-
-                <!-- Row 2 -->
-                <tr class="hover:bg-[var(--background)] transition-colors">
-                    <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium text-[var(--text-dark)] whitespace-nowrap">
-                        Penelitian Sistem Informasi Cerdas
-                    </td>
-                    <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-xs sm:text-sm text-[var(--text-light)] whitespace-nowrap">
-                        01 Jan 2025 - 30 Jun 2025
-                    </td>
-                    <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-xs sm:text-sm text-[var(--text-light)] text-center">
-                        5
-                    </td>
-                    <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
+                        <?php else: ?>
                         <span class="flex items-center text-[var(--primary)] font-semibold">
                             <i class="fas fa-exclamation-triangle text-xs sm:text-sm mr-1 sm:mr-2"></i>
                             Belum diunggah
                         </span>
+                        <?php endif; ?>
                     </td>
                     <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-center">
-                        <button onclick="showLaporanModal(2)" title="Detail & Lapor"
+                        <button onclick="showLaporanModal('<?= $program['IdKKS'] ?>')" title="Detail & Lapor"
                             class="p-1 sm:p-2 rounded-md bg-[var(--accent)] text-[var(--primary)] hover:bg-[var(--primary)]/20 transition shadow-sm">
                             <i class="fas fa-file-alt text-xs sm:text-sm"></i>
                         </button>
                     </td>
                 </tr>
+                <?php endforeach; ?>
             </tbody>
         </table>
     </div>
@@ -84,7 +106,7 @@
     <!-- Pagination -->
     <div class="flex flex-col sm:flex-row justify-between items-center mt-3 sm:mt-4 gap-2 sm:gap-0">
         <div class="text-[10px] sm:text-xs text-gray-500">
-            <i class="fas fa-info-circle mr-1"></i>Menampilkan 2 dari 10 program
+            <i class="fas fa-info-circle mr-1"></i>Menampilkan <?= count($programs) ?> dari <?= count($programs) ?> program
         </div>
         <div class="flex space-x-1 sm:space-x-2">
             <button class="px-2 sm:px-3 py-1 border border-[var(--border)] rounded hover:bg-[var(--border)] text-[var(--text-light)] text-xs sm:text-sm">
@@ -100,7 +122,7 @@
     </div>
 </div>
 
-
+<!-- Modal -->
 <div id="laporanModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
     <div id="modalContent" class="modal-modern w-full max-w-2xl transform transition-all duration-300 scale-95 opacity-0 max-h-[90vh] flex flex-col text-sm sm:text-base">
         <div class="flex justify-between items-center p-4 sm:p-5 border-b border-[var(--border)]">
@@ -114,8 +136,8 @@
             <input type="hidden" id="pelaksanaanId" name="pelaksanaanId">
 
             <div class="bg-[var(--background)] p-3 sm:p-4 rounded-lg border border-[var(--border)]">
-                <h4 class="font-bold text-[var(--text-dark)] text-sm sm:text-base">Magang Mahasiswa Batch 5</h4>
-                <p class="text-xs sm:text-sm text-[var(--text-light)]">Periode: 01 Februari 2025 - 31 Juli 2025</p>
+                <h4 id="modalKegiatanTitle" class="font-bold text-[var(--text-dark)] text-sm sm:text-base"></h4>
+                <p id="modalKegiatanPeriode" class="text-xs sm:text-sm text-[var(--text-light)]"></p>
             </div>
 
             <div>
@@ -168,43 +190,83 @@
 </div>
 
 <script>
-    // Script ini sebaiknya berada di file JS utama, tapi diletakkan di sini untuk kelengkapan
-    const laporanModal = document.getElementById('laporanModal');
-    const modalContent = document.getElementById('modalContent');
-    const laporanForm = document.getElementById('laporanForm');
-
-    function showLaporanModal(pelaksanaanId) {
-        if (!laporanModal || !modalContent || !laporanForm) return;
-        laporanForm.reset();
-
-        // Contoh pengisian data dinamis
-        // document.getElementById('pelaksanaanId').value = pelaksanaanId;
-
-        laporanModal.classList.remove('hidden');
-        setTimeout(() => {
-            modalContent.classList.remove('opacity-0', 'scale-95');
-            modalContent.classList.add('opacity-100', 'scale-100');
-        }, 10);
+    // Function to show modal with dynamic data
+    async function showLaporanModal(programId) {
+        try {
+            // Fetch program details from server
+            const response = await fetch(`user/get_kegiatan_detail.php?id=${programId}`);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const program = await response.json();
+            
+            // Set modal title and info
+            document.getElementById('pelaksanaanId').value = programId;
+            document.getElementById('modalKegiatanTitle').textContent = program.txtNamaKegiatanKS;
+            document.getElementById('modalKegiatanPeriode').textContent = `Periode: ${formatJsDate(program.dtMulaiPelaksanaan)} - ${formatJsDate(program.dtSelesaiPelaksanaan)}`;
+            
+            // Show modal with animation
+            document.getElementById('laporanModal').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('modalContent').classList.remove('opacity-0', 'scale-95');
+                document.getElementById('modalContent').classList.add('opacity-100', 'scale-100');
+            }, 10);
+            
+        } catch (error) {
+            console.error('Error fetching program details:', error);
+            alert('Gagal memuat detail program. Silakan coba lagi.');
+        }
     }
 
+    // Function to close modal
     function closeLaporanModal() {
-        if (!laporanModal || !modalContent) return;
-        modalContent.classList.remove('opacity-100', 'scale-100');
-        modalContent.classList.add('opacity-0', 'scale-95');
+        document.getElementById('modalContent').classList.remove('opacity-100', 'scale-100');
+        document.getElementById('modalContent').classList.add('opacity-0', 'scale-95');
         setTimeout(() => {
-            laporanModal.classList.add('hidden');
+            document.getElementById('laporanModal').classList.add('hidden');
         }, 300);
     }
 
+    // Function to export data
     function exportData() {
-        alert('Fungsi Export Data ke Excel akan diimplementasikan!');
+        // This would typically make an AJAX call to generate an Excel file
+        window.location.href = 'export_excel.php';
     }
 
-    if (laporanForm) {
-        laporanForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Data laporan pelaksanaan berhasil disimpan!');
-            closeLaporanModal();
-        });
+    // Helper function to format date
+    function formatJsDate(dateString) {
+        const options = { day: 'numeric', month: 'long', year: 'numeric' };
+        return new Date(dateString).toLocaleDateString('id-ID', options);
     }
+
+    // Form submission handler
+    document.getElementById('laporanForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        try {
+            const response = await fetch('save_laporan.php', {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            
+            const result = await response.json();
+            if (result.success) {
+                alert('Laporan berhasil disimpan!');
+                closeLaporanModal();
+                // Optionally refresh the page or table
+                window.location.reload();
+            } else {
+                alert(result.message || 'Gagal menyimpan laporan');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat menyimpan laporan');
+        }
+    });
 </script>

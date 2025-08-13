@@ -4,7 +4,7 @@ $kegiatan_list = $koneksi->query("SELECT IdKKS, txtNamaKegiatanKS FROM tblnamake
 
 // === Logika Filter & Paginasi ===
 $limit = 5;
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
 $offset = ($page - 1) * $limit;
 
 $search = $_GET['search'] ?? '';
