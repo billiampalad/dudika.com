@@ -53,11 +53,13 @@ $problems_data = $result->fetch_all(MYSQLI_ASSOC);
 $stmt_data->close();
 
 // Fungsi helper untuk styling
-function get_urgensi_style($urgensi) {
+function get_urgensi_style($urgensi)
+{
     $styles = ['tinggi' => 'bg-red-500 text-red-600', 'sedang' => 'bg-yellow-500 text-yellow-600', 'rendah' => 'bg-green-500 text-green-600'];
     return $styles[$urgensi] ?? 'bg-gray-500 text-gray-600';
 }
-function get_status_style($status) {
+function get_status_style($status)
+{
     return $status == 'diproses' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800';
 }
 ?>
@@ -75,12 +77,21 @@ function get_status_style($status) {
         </div>
 
         <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
-            <form id="filterForm" method="GET" action="">
-                <div class="px-6 py-5 border-b flex flex-col sm:flex-row justify-between items-start gap-4">
+            <form id="filterForm" method="GET" action="" class="px-6 py-5 border-b">
+                <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
                     <h3 class="font-bold text-gray-800 mt-2">Daftar Kendala dan Solusi</h3>
                     <div class="w-full sm:w-auto grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div class="relative"><div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="fas fa-search text-gray-400 text-sm"></i></div><input type="text" name="search" id="searchInput" placeholder="Cari kegiatan atau kendala..." value="<?= htmlspecialchars($search) ?>" class="pl-9 pr-4 py-2 border rounded-lg w-full text-sm"></div>
-                        <select name="urgensi" id="filterUrgensi" class="text-sm px-3 py-2 border rounded-lg bg-white text-gray-700">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-400 text-sm"></i>
+                            </div>
+                            <input type="text" name="search" id="searchInput"
+                                placeholder="Cari kegiatan atau kendala..."
+                                value="<?= htmlspecialchars($search) ?>"
+                                class="pl-9 pr-4 py-2 border rounded-lg w-full text-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-500">
+                        </div>
+                        <select name="urgensi" id="filterUrgensi"
+                            class="text-sm px-3 py-2 border rounded-lg bg-white text-gray-700 focus:ring-2 focus:ring-blue-200 focus:border-blue-500">
                             <option value="">Semua Urgensi</option>
                             <option value="tinggi" <?= $filter_urgensi == 'tinggi' ? 'selected' : '' ?>>Tinggi</option>
                             <option value="sedang" <?= $filter_urgensi == 'sedang' ? 'selected' : '' ?>>Sedang</option>
@@ -88,194 +99,479 @@ function get_status_style($status) {
                         </select>
                     </div>
                 </div>
+                <!-- Tambahkan input hidden untuk parameter pagination -->
+                <input type="hidden" name="page" value="1">
             </form>
 
-            <div class="hidden sm:block overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Kegiatan</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kendala</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Solusi</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        <?php if (!empty($problems_data)): foreach ($problems_data as $row): 
-                            $urgensi_style = get_urgensi_style($row['urgensi']);
-                            $status_style = get_status_style($row['status']);
-                        ?>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900"><?= htmlspecialchars($row['txtNamaKegiatanKS']) ?></div>
-                                <div class="flex items-center mt-1.5"><span class="w-2 h-2 rounded-full mr-2 <?= $urgensi_style ?>"></span><span class="text-xs font-medium <?= $urgensi_style ?>"><?= 'Urgensi ' . ucfirst($row['urgensi']) ?></span></div>
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-600 max-w-xs"><?= htmlspecialchars($row['txtKendala']) ?></td>
-                            <td class="px-6 py-4 text-sm text-gray-600 max-w-xs"><?= htmlspecialchars($row['txtUpayaUtkAtasiMslh']) ?></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center"><span class="status-badge inline-flex items-center px-3 py-1 rounded-full text-xs font-medium <?= $status_style ?>"><i class="fas <?= $row['status'] == 'diproses' ? 'fa-hourglass-half' : 'fa-check-circle' ?> mr-1.5"></i> <?= ucfirst($row['status']) ?></span></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <div class="flex justify-center space-x-2">
-                                    <?php if ($row['status'] == 'diproses'): ?><button onclick="markAsDone(this, '<?= $row['IdMslhDanSolusi'] ?>')" class="text-gray-500 hover:text-green-600" title="Tandai Selesai"><i class="fas fa-check-circle fa-lg"></i></button><?php endif; ?>
-                                    <button onclick="showEditModal(this, '<?= $row['IdMslhDanSolusi'] ?>')" class="text-gray-500 hover:text-indigo-600" title="Detail / Edit"><i class="fas fa-edit fa-lg"></i></button>
-                                </div>
-                            </td>
-                        </tr>
-                        <?php endforeach; else: ?>
-                        <tr><td colspan="5" class="text-center py-8 text-gray-500">Tidak ada data kendala yang cocok.</td></tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+            <div class="hidden sm:block rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gradient-to-r from-blue-50 to-indigo-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama Kegiatan</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Kendala</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Solusi</th>
+                                <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                                <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <?php if (!empty($problems_data)): foreach ($problems_data as $row):
+                                    $urgensi_style = get_urgensi_style($row['urgensi']);
+                                    $status_style = get_status_style($row['status']);
+                            ?>
+                                    <tr class="hover:bg-gray-50 transition-colors duration-150">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex flex-col">
+                                                <span class="text-sm font-medium text-gray-900"><?= htmlspecialchars($row['txtNamaKegiatanKS']) ?></span>
+                                                <div class="flex items-center mt-1">
+                                                    <span class="w-2.5 h-2.5 rounded-full mr-2 <?= $urgensi_style ?>"></span>
+                                                    <span class="text-xs font-medium text-gray-500"><?= 'Urgensi ' . ucfirst($row['urgensi']) ?></span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-600 max-w-xs">
+                                            <div class="line-clamp-2"><?= htmlspecialchars($row['txtKendala']) ?></div>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-600 max-w-xs">
+                                            <div class="line-clamp-2"><?= htmlspecialchars($row['txtUpayaUtkAtasiMslh']) ?></div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium leading-4 <?= $status_style ?>">
+                                                <i class="fas <?= $row['status'] == 'diproses' ? 'fa-hourglass-half mr-1.5' : 'fa-check-circle mr-1.5' ?>"></i>
+                                                <?= ucfirst($row['status']) ?>
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                                            <div class="flex justify-center space-x-3">
+                                                <?php if ($row['status'] == 'diproses'): ?>
+                                                    <button onclick="markAsDone(this, '<?= $row['IdMslhDanSolusi'] ?>')"
+                                                        class="p-1.5 rounded-full text-gray-500 hover:text-green-600 hover:bg-green-50 transition-colors"
+                                                        title="Tandai Selesai">
+                                                        <i class="fas fa-check-circle fa-lg"></i>
+                                                    </button>
+                                                <?php endif; ?>
+                                                <button onclick="showEditModal(this, '<?= $row['IdMslhDanSolusi'] ?>')"
+                                                    class="p-1.5 rounded-full text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+                                                    title="Detail / Edit">
+                                                    <i class="fas fa-edit fa-lg"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach;
+                            else: ?>
+                                <tr>
+                                    <td colspan="5" class="text-center py-12">
+                                        <div class="flex flex-col items-center justify-center text-gray-400">
+                                            <i class="fas fa-inbox text-4xl mb-3"></i>
+                                            <span class="text-sm font-medium">Tidak ada data kendala yang cocok</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <div class="block sm:hidden space-y-4 p-4">
-                <?php if (!empty($problems_data)): foreach ($problems_data as $row): 
-                    $urgensi_style = get_urgensi_style($row['urgensi']);
-                    $status_style = get_status_style($row['status']);
+                <?php if (!empty($problems_data)): foreach ($problems_data as $row):
+                        $urgensi_style = get_urgensi_style($row['urgensi']);
+                        $status_style = get_status_style($row['status']);
                 ?>
-                <div class="bg-white border rounded-lg p-5 shadow-xs">
-                    <div class="flex justify-between items-start mb-3">
-                        <div>
-                            <div class="text-sm font-semibold text-gray-800"><?= htmlspecialchars($row['txtNamaKegiatanKS']) ?></div>
-                            <div class="flex items-center mt-1"><span class="w-2 h-2 rounded-full mr-2 <?= $urgensi_style ?>"></span><span class="text-xs font-medium <?= $urgensi_style ?>">Urgensi <?= ucfirst($row['urgensi']) ?></span></div>
+                        <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                            <!-- Header Row -->
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="text-sm font-semibold text-gray-800"><?= htmlspecialchars($row['txtNamaKegiatanKS']) ?></h3>
+                            </div>
+
+                            <!-- Status and Urgency Row -->
+                            <div class="flex justify-between items-center mb-3">
+                                <div class="flex items-center">
+                                    <span class="w-2.5 h-2.5 rounded-full mr-2 <?= $urgensi_style ?>"></span>
+                                    <span class="text-xs font-medium text-gray-600">Urgensi <?= ucfirst($row['urgensi']) ?></span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium <?= $status_style ?>">
+                                        <i class="fas <?= $row['status'] == 'diproses' ? 'fa-hourglass-half mr-1' : 'fa-check-circle mr-1' ?> text-xs"></i>
+                                        <?= ucfirst($row['status']) ?>
+                                    </span>
+                                    <div class="flex space-x-1">
+                                        <?php if ($row['status'] == 'diproses'): ?>
+                                            <button onclick="markAsDone(this, '<?= $row['IdMslhDanSolusi'] ?>')"
+                                                class="p-1.5 rounded-full text-green-600 hover:bg-green-50">
+                                                <i class="fas fa-check-circle text-sm"></i>
+                                            </button>
+                                        <?php endif; ?>
+                                        <button onclick="showEditModal(this, '<?= $row['IdMslhDanSolusi'] ?>')"
+                                            class="p-1.5 rounded-full text-indigo-600 hover:bg-indigo-50">
+                                            <i class="fas fa-edit text-sm"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Content Section -->
+                            <div class="space-y-3 text-sm border-t border-gray-100 pt-3">
+                                <div>
+                                    <span class="block text-xs font-medium text-gray-500 mb-1">Kendala:</span>
+                                    <p class="text-gray-700 text-sm"><?= htmlspecialchars($row['txtKendala']) ?></p>
+                                </div>
+                                <div>
+                                    <span class="block text-xs font-medium text-gray-500 mb-1">Solusi:</span>
+                                    <p class="text-gray-700 text-sm"><?= htmlspecialchars($row['txtUpayaUtkAtasiMslh']) ?></p>
+                                </div>
+                            </div>
                         </div>
-                        <span class="status-badge inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?= $status_style ?>"><i class="fas <?= $row['status'] == 'diproses' ? 'fa-hourglass-half' : 'fa-check-circle' ?> mr-1.5"></i> <?= ucfirst($row['status']) ?></span>
+                    <?php endforeach;
+                else: ?>
+                    <div class="flex flex-col items-center justify-center py-12 text-center">
+                        <i class="fas fa-inbox text-3xl text-gray-300 mb-3"></i>
+                        <p class="text-sm font-medium text-gray-500">Tidak ada data kendala yang cocok</p>
                     </div>
-                    <div class="space-y-3 text-sm border-t pt-3 mt-3">
-                        <div><span class="block text-xs font-medium text-gray-500 mb-1">Kendala:</span><p class="text-gray-700"><?= htmlspecialchars($row['txtKendala']) ?></p></div>
-                        <div><span class="block text-xs font-medium text-gray-500 mb-1">Solusi:</span><p class="text-gray-700"><?= htmlspecialchars($row['txtUpayaUtkAtasiMslh']) ?></p></div>
-                    </div>
-                    <div class="flex justify-end space-x-3 border-t pt-3 mt-4">
-                        <?php if ($row['status'] == 'diproses'): ?><button onclick="markAsDone(this, '<?= $row['IdMslhDanSolusi'] ?>')" class="px-3 py-1.5 text-xs rounded-md text-green-700 bg-green-50"><i class="fas fa-check-circle fa-sm mr-1"></i> Selesai</button><?php endif; ?>
-                        <button onclick="showEditModal(this, '<?= $row['IdMslhDanSolusi'] ?>')" class="px-3 py-1.5 text-xs rounded-md text-indigo-700 bg-indigo-50"><i class="fas fa-edit fa-sm mr-1"></i> Edit</button>
-                    </div>
-                </div>
-                <?php endforeach; else: ?>
-                <p class="text-center py-8 text-gray-500">Tidak ada data kendala yang cocok.</p>
                 <?php endif; ?>
             </div>
         </div>
     </div>
 </main>
 
-<div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div id="editModalContent" class="bg-white w-full max-w-2xl rounded-lg shadow-xl transform transition-all duration-300 scale-95 opacity-0 max-h-[90vh] flex flex-col">
-        <div class="flex justify-between items-center px-6 py-4 border-b"><h3 class="text-lg font-semibold" id="modalTitle"></h3><button onclick="closeEditModal()" class="text-gray-400">&times;</button></div>
-        <form id="kendalaForm" class="p-6 space-y-5 overflow-y-auto flex-grow">
+<div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity duration-300">
+    <div id="editModalContent" class="bg-white w-full max-w-2xl rounded-xl shadow-2xl transform transition-all duration-300 scale-95 opacity-0 max-h-[90vh] flex flex-col overflow-hidden border border-gray-100">
+        <!-- Modal Header -->
+        <div class="flex justify-between items-center px-4 py-3 sm:px-6 sm:py-4 border-b background-icon">
+            <h3 class="text-lg sm:text-xl font-semibold text-white" id="modalTitle"></h3>
+            <button onclick="closeEditModal()" class="text-white hover:text-gray-200 transition-colors text-2xl font-light p-1">&times;</button>
+        </div>
+
+        <!-- Modal Body -->
+        <form id="kendalaForm" class="p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto flex-grow">
             <input type="hidden" id="IdMslhDanSolusi" name="IdMslhDanSolusi">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div>
-                    <label for="IdKKS" class="block text-sm font-medium text-gray-700 mb-1">Nama Kegiatan</label>
-                    <select id="IdKKS" name="IdKKS" class="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md" required>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                <div class="space-y-1">
+                    <label for="IdKKS" class="block text-sm font-medium text-gray-600">Nama Kegiatan</label>
+                    <select id="IdKKS" name="IdKKS" class="w-full px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all outline-none text-sm sm:text-base">
                         <option value="">-- Pilih Kegiatan --</option>
-                        <?php mysqli_data_seek($kegiatan_list, 0); while($kegiatan = $kegiatan_list->fetch_assoc()): ?>
-                        <option value="<?= $kegiatan['IdKKS'] ?>"><?= htmlspecialchars($kegiatan['txtNamaKegiatanKS']) ?></option>
+                        <?php mysqli_data_seek($kegiatan_list, 0);
+                        while ($kegiatan = $kegiatan_list->fetch_assoc()): ?>
+                            <option value="<?= $kegiatan['IdKKS'] ?>"><?= htmlspecialchars($kegiatan['txtNamaKegiatanKS']) ?></option>
                         <?php endwhile; ?>
                     </select>
                 </div>
-                <div>
-                    <label for="urgensi" class="block text-sm font-medium text-gray-700 mb-1">Tingkat Urgensi</label>
-                    <select id="urgensi" name="urgensi" class="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md" required>
-                        <option value="rendah">Rendah</option><option value="sedang">Sedang</option><option value="tinggi">Tinggi</option>
+
+                <div class="space-y-1">
+                    <label for="urgensi" class="block text-sm font-medium text-gray-600">Tingkat Urgensi</label>
+                    <select id="urgensi" name="urgensi" class="w-full px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all outline-none text-sm sm:text-base">
+                        <option value="rendah">Rendah</option>
+                        <option value="sedang">Sedang</option>
+                        <option value="tinggi">Tinggi</option>
                     </select>
                 </div>
             </div>
-            <div><label for="txtKendala" class="block text-sm font-medium text-gray-700 mb-1">Kendala yang Dihadapi</label><textarea id="txtKendala" name="txtKendala" rows="3" class="mt-1 block w-full border-gray-300 rounded-md p-3" required></textarea></div>
-            <div><label for="txtUpayaUtkAtasiMslh" class="block text-sm font-medium text-gray-700 mb-1">Upaya Penyelesaian (Solusi)</label><textarea id="txtUpayaUtkAtasiMslh" name="txtUpayaUtkAtasiMslh" rows="3" class="mt-1 block w-full border-gray-300 rounded-md p-3" required></textarea></div>
-            <div><label for="txtRekomUtkPerbaikan" class="block text-sm font-medium text-gray-700 mb-1">Rekomendasi Perbaikan ke Depan</label><textarea id="txtRekomUtkPerbaikan" name="txtRekomUtkPerbaikan" rows="3" class="mt-1 block w-full border-gray-300 rounded-md p-3"></textarea></div>
-            <div class="flex justify-end space-x-3 pt-5 border-t"><button type="button" onclick="closeEditModal()" class="px-4 py-2 border rounded-md text-sm">Batal</button><button type="submit" class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-blue-600"><i class="fas fa-save fa-sm mr-2"></i><span id="submitButtonText"></span></button></div>
+
+            <div class="space-y-1">
+                <label for="txtKendala" class="block text-sm font-medium text-gray-600">Kendala yang Dihadapi</label>
+                <textarea id="txtKendala" name="txtKendala" rows="3" class="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all outline-none resize-none text-sm sm:text-base"></textarea>
+            </div>
+
+            <div class="space-y-1">
+                <label for="txtUpayaUtkAtasiMslh" class="block text-sm font-medium text-gray-600">Upaya Penyelesaian (Solusi)</label>
+                <textarea id="txtUpayaUtkAtasiMslh" name="txtUpayaUtkAtasiMslh" rows="3" class="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all outline-none resize-none text-sm sm:text-base"></textarea>
+            </div>
+
+            <div class="space-y-1">
+                <label for="txtRekomUtkPerbaikan" class="block text-sm font-medium text-gray-600">Rekomendasi Perbaikan ke Depan</label>
+                <textarea id="txtRekomUtkPerbaikan" name="txtRekomUtkPerbaikan" rows="3" class="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all outline-none resize-none text-sm sm:text-base"></textarea>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="flex justify-end space-x-2 sm:space-x-3 pt-4 sm:pt-6 border-t">
+                <button type="button" onclick="closeEditModal()" class="px-3 py-2 sm:px-5 sm:py-2.5 border border-gray-300 rounded-lg text-xs sm:text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                    Batal
+                </button>
+                <button type="submit" class="inline-flex items-center px-3 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm">
+                    <i class="fas fa-save text-xs sm:text-sm mr-1 sm:mr-2"></i>
+                    <span id="submitButtonText"></span>
+                </button>
+            </div>
         </form>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    // === Konfigurasi & Elemen Global ===
-    let activeElementBeforeModal;
-    const editModal = document.getElementById('editModal');
-    const editModalContent = document.getElementById('editModalContent');
-    const modalTitle = document.getElementById('modalTitle');
-    const kendalaForm = document.getElementById('kendalaForm');
-    const submitButtonText = document.getElementById('submitButtonText');
-    const swalConfig = { customClass: { popup: 'p-4 sm:p-6 rounded-lg', confirmButton: 'px-4 py-2 rounded-md text-white', cancelButton: 'ml-3 px-4 py-2 rounded-md bg-white border' }, buttonsStyling: false };
+    document.addEventListener('DOMContentLoaded', () => {
+        // === Konfigurasi & Elemen Global ===
+        const editModal = document.getElementById('editModal');
+        const editModalContent = document.getElementById('editModalContent');
+        const modalTitle = document.getElementById('modalTitle');
+        const kendalaForm = document.getElementById('kendalaForm');
+        const submitButtonText = document.getElementById('submitButtonText');
+        const filterForm = document.getElementById('filterForm');
+        const searchInput = document.getElementById('searchInput');
+        const filterUrgensi = document.getElementById('filterUrgensi');
+        const problemsContainer = document.querySelector('.overflow-x-auto');
+        const mobileProblemsContainer = document.querySelector('.block.sm\\:hidden');
 
-    // === Fungsi Backend Communication ===
-    const apiCall = async (action, options = {}) => {
-        const url = `permasalahan_solusi_action.php?action=${action}`;
-        try {
-            const response = await fetch(url, options);
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            return await response.json();
-        } catch (error) {
-            Swal.fire({ ...swalConfig, icon: 'error', title: 'Koneksi Gagal', customClass: {...swalConfig.customClass, confirmButton: 'bg-red-600'} });
-            return null;
-        }
-    };
+        // Konfigurasi SweetAlert
+        const swalConfig = {
+            customClass: {
+                popup: 'p-4 sm:p-6 rounded-lg',
+                confirmButton: 'px-4 py-2 rounded-md text-white',
+                cancelButton: 'ml-3 px-4 py-2 rounded-md bg-white border'
+            },
+            buttonsStyling: false
+        };
 
-    // === Fungsi Modal ===
-    window.showEditModal = async (triggerEl, id = null) => {
-        activeElementBeforeModal = triggerEl;
-        kendalaForm.reset();
-        document.getElementById('IdMslhDanSolusi').value = '';
-        modalTitle.textContent = id ? 'Edit Kendala & Solusi' : 'Laporkan Kendala Baru';
-        submitButtonText.textContent = id ? 'Simpan Perubahan' : 'Laporkan';
+        // === Fungsi Utilitas ===
 
-        if (id) {
-            const result = await apiCall(`get_single_problem&id=${id}`);
-            if (result && result.status === 'success') {
-                Object.keys(result.data).forEach(key => {
-                    const el = document.getElementById(key);
-                    if (el) el.value = result.data[key];
+        // Debounce untuk optimasi performa
+        const debounce = (func, delay = 500) => {
+            let timeoutId;
+            return (...args) => {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => func.apply(this, args), delay);
+            };
+        };
+
+        // Fungsi untuk menampilkan loading
+        const showLoading = () => {
+            return Swal.fire({
+                title: 'Memproses...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+        };
+
+        // === Fungsi API ===
+
+        const fetchData = async (url, options = {}) => {
+            try {
+                const response = await fetch(url, options);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.error('Fetch error:', error);
+                Swal.fire({
+                    ...swalConfig,
+                    icon: 'error',
+                    title: 'Koneksi Gagal',
+                    text: 'Terjadi kesalahan saat menghubungi server',
+                    customClass: {
+                        ...swalConfig.customClass,
+                        confirmButton: 'bg-red-600'
+                    }
                 });
+                return null;
             }
-        }
-        
-        editModal.classList.remove('hidden');
-        setTimeout(() => editModalContent.classList.remove('opacity-0', 'scale-95'), 10);
-    };
+        };
 
-    window.closeEditModal = () => {
-        editModalContent.classList.add('opacity-0', 'scale-95');
-        setTimeout(() => editModal.classList.add('hidden'), 300);
-    };
+        const apiCall = async (action, data = {}) => {
+            const formData = new FormData();
+            for (const key in data) {
+                formData.append(key, data[key]);
+            }
 
-    // === Fungsi Aksi & Notifikasi ===
-    window.markAsDone = (button, id) => {
-        Swal.fire({ ...swalConfig, title: 'Tandai Selesai?', icon: 'question', showCancelButton: true, confirmButtonText: 'Ya, Selesaikan', cancelButtonText: 'Batal', customClass: { ...swalConfig.customClass, confirmButton: 'bg-green-600' }
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                const res = await apiCall('mark_as_done', { method: 'POST', body: new URLSearchParams({id: id}) });
-                if (res && res.status === 'success') {
-                    await Swal.fire({ ...swalConfig, title: 'Berhasil!', icon: 'success', timer: 1500, showConfirmButton: false });
-                    window.location.reload();
+            return await fetchData(`pimpinan/permasalahan_solusi_action.php?action=${action}`, {
+                method: 'POST',
+                body: formData
+            });
+        };
+
+        // === Fungsi Modal ===
+
+        window.showEditModal = async (triggerEl, id = null) => {
+            // Set judul modal dan tombol submit
+            modalTitle.textContent = id ? 'Edit Kendala & Solusi' : 'Laporkan Kendala Baru';
+            submitButtonText.textContent = id ? 'Simpan Perubahan' : 'Laporkan';
+
+            // Reset form dan set ID jika edit
+            kendalaForm.reset();
+            document.getElementById('IdMslhDanSolusi').value = id || '';
+
+            // Jika mode edit, ambil data dari server
+            if (id) {
+                const loading = showLoading();
+
+                try {
+                    const result = await fetchData(`pimpinan/permasalahan_solusi_action.php?action=get_single_problem&id=${id}`);
+                    if (result?.status === 'success') {
+                        // Isi form dengan data yang diterima
+                        Object.entries(result.data).forEach(([key, value]) => {
+                            const el = document.getElementById(key);
+                            if (el) el.value = value;
+                        });
+                    }
+                } finally {
+                    loading.close();
                 }
             }
+
+            // Tampilkan modal dengan animasi
+            editModal.classList.remove('hidden');
+            setTimeout(() => {
+                editModalContent.classList.remove('opacity-0', 'scale-95');
+                // Fokus ke elemen pertama yang bisa diisi
+                const firstInput = kendalaForm.querySelector('input, select, textarea');
+                if (firstInput) firstInput.focus();
+            }, 10);
+        };
+
+        window.closeEditModal = () => {
+            // Sembunyikan modal dengan animasi
+            editModalContent.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                editModal.classList.add('hidden');
+            }, 300);
+        };
+
+        // === Fungsi Aksi ===
+
+        window.markAsDone = async (button, id) => {
+            const result = await Swal.fire({
+                ...swalConfig,
+                title: 'Tandai Selesai?',
+                text: 'Anda yakin ingin menandai kendala ini sebagai selesai?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Selesaikan',
+                cancelButtonText: 'Batal',
+                customClass: {
+                    ...swalConfig.customClass,
+                    confirmButton: 'bg-green-600'
+                }
+            });
+
+            if (result.isConfirmed) {
+                const loading = showLoading();
+
+                try {
+                    const res = await apiCall('mark_as_done', {
+                        id
+                    });
+                    if (res?.status === 'success') {
+                        await Swal.fire({
+                            ...swalConfig,
+                            title: 'Berhasil!',
+                            text: 'Status telah diperbarui',
+                            icon: 'success',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                        // Refresh data tanpa reload halaman
+                        loadProblemsData();
+                    }
+                } finally {
+                    loading.close();
+                }
+            }
+        };
+
+        // === Fungsi untuk Memuat Data Permasalahan ===
+
+        const loadProblemsData = async () => {
+            const loading = showLoading();
+
+            try {
+                const formData = new FormData(filterForm);
+                const params = new URLSearchParams(formData);
+
+                const response = await fetch(`permasalahan_solusi.php?${params.toString()}`);
+                const html = await response.text();
+
+                // Parse response dan update konten
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+
+                // Update tabel desktop
+                const newTable = doc.querySelector('.overflow-x-auto');
+                if (newTable && problemsContainer) {
+                    problemsContainer.innerHTML = newTable.innerHTML;
+                }
+
+                // Update tampilan mobile
+                const newMobileView = doc.querySelector('.block.sm\\:hidden');
+                if (newMobileView && mobileProblemsContainer) {
+                    mobileProblemsContainer.innerHTML = newMobileView.innerHTML;
+                }
+            } catch (error) {
+                console.error('Load data error:', error);
+                Swal.fire({
+                    ...swalConfig,
+                    icon: 'error',
+                    title: 'Gagal Memuat Data',
+                    text: 'Terjadi kesalahan saat memuat data permasalahan'
+                });
+            } finally {
+                loading.close();
+            }
+        };
+
+        // === Event Listeners ===
+
+        // Handle submit form kendala
+        kendalaForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(kendalaForm);
+            const id = formData.get('IdMslhDanSolusi');
+            const action = id ? 'update_problem' : 'add_problem';
+
+            const loading = showLoading();
+
+            try {
+                const result = await apiCall(action, Object.fromEntries(formData));
+
+                if (result?.status === 'success') {
+                    closeEditModal();
+                    await Swal.fire({
+                        ...swalConfig,
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: `Data berhasil ${id ? 'diperbarui' : 'dilaporkan'}.`,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    // Refresh data setelah submit
+                    await loadProblemsData();
+                }
+            } finally {
+                loading.close();
+            }
         });
-    };
 
-    // === Event Listeners ===
-    kendalaForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const id = document.getElementById('IdMslhDanSolusi').value;
-        const action = id ? 'update_problem' : 'add_problem';
-        const result = await apiCall(action, { method: 'POST', body: new FormData(kendalaForm) });
+        // Handle filter form
+        const handleFilterChange = debounce(() => {
+            // Reset ke halaman 1 saat filter berubah
+            filterForm.querySelector('input[name="page"]').value = 1;
+            loadProblemsData();
+        });
 
-        if (result && result.status === 'success') {
-            closeEditModal();
-            await Swal.fire({ ...swalConfig, icon: 'success', title: 'Berhasil!', text: `Data berhasil ${id ? 'diperbarui' : 'dilaporkan'}.`, timer: 1500, showConfirmButton: false });
-            window.location.reload();
-        }
+        searchInput.addEventListener('input', handleFilterChange);
+        filterUrgensi.addEventListener('change', handleFilterChange);
+
+        // Handle pagination
+        document.addEventListener('click', async (e) => {
+            if (e.target.closest('.pagination a')) {
+                e.preventDefault();
+                const page = e.target.closest('a').getAttribute('href').split('page=')[1];
+                filterForm.querySelector('input[name="page"]').value = page;
+                await loadProblemsData();
+            }
+        });
+
+        // Handle modal close
+        editModal.addEventListener('click', (e) => e.target === editModal && closeEditModal());
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !editModal.classList.contains('hidden')) {
+                closeEditModal();
+            }
+        });
+
+        // Inisialisasi pertama kali
+        loadProblemsData();
     });
-
-    const filterForm = document.getElementById('filterForm');
-    ['searchInput', 'filterUrgensi'].forEach(id => {
-        document.getElementById(id).addEventListener('change', () => filterForm.submit());
-    });
-
-    editModal.addEventListener('click', e => { if (e.target === editModal) closeEditModal(); });
-    window.addEventListener('keydown', e => { if (e.key === 'Escape' && !editModal.classList.contains('hidden')) closeEditModal(); });
-});
 </script>
 
 <?php

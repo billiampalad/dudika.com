@@ -112,11 +112,14 @@ if ($total_data > 0) {
         <div>
             <h2 class="text-xl font-bold text-gray-800 tracking-tight">Program Kerjasama</h2>
         </div>
-        <div class="flex items-center gap-3">
-            <button onclick="showAddEditModal(this)" class="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center space-x-2 shadow-md hover:shadow-lg focus:ring-2 focus:ring-blue-200 focus:ring-offset-2">
-                <i class="fas fa-plus fa-sm"></i><span class="text-sm font-medium">Tambah Kerjasama</span>
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+            <button onclick="showAddEditModal(this)"
+                class="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center space-x-2 shadow-md hover:shadow-lg focus:ring-2 focus:ring-blue-200 focus:ring-offset-2">
+                <i class="fas fa-plus fa-sm"></i>
+                <span class="text-sm font-medium">Tambah Kerjasama</span>
             </button>
-            <button onclick="exportData()" class="bg-gradient-to-r from-emerald-600 to-green-500 text-white px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity flex items-center space-x-2 shadow-md hover:shadow-lg focus:ring-2 focus:ring-emerald-200 focus:ring-offset-2">
+            <button onclick="exportData()"
+                class="w-full sm:w-auto bg-gradient-to-r from-emerald-600 to-green-500 text-white px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center space-x-2 shadow-md hover:shadow-lg focus:ring-2 focus:ring-emerald-200 focus:ring-offset-2">
                 <i class="fas fa-file-excel fa-sm"></i>
                 <span class="text-sm font-medium">Export Excel</span>
             </button>
@@ -884,24 +887,6 @@ if ($total_data > 0) {
             });
         };
 
-        function exportData() {
-            // Ambil parameter filter yang aktif
-            const search = document.getElementById('searchInput').value;
-            const jenis = document.getElementById('filterJenis').value;
-            const status = document.getElementById('filterStatus').value;
-
-            // Bangun URL dengan parameter
-            const params = new URLSearchParams({
-                action: 'export_kerjasama', // Pastikan ini sesuai dengan action di PHP
-                search: search,
-                jenis: jenis,
-                status: status
-            });
-
-            // Buka tab baru untuk export
-            window.open(`pimpinan/export_excel.php?${params.toString()}`, '_blank');
-        }
-
         // Event listener untuk submit form tambah/edit
         addEditForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -986,6 +971,24 @@ if ($total_data > 0) {
         // Memuat data awal saat halaman dimuat
         performSearch();
     });
+
+    function exportData() {
+        // Ambil parameter filter yang aktif
+        const search = document.getElementById('searchInput').value;
+        const jenis = document.getElementById('filterJenis').value;
+        const status = document.getElementById('filterStatus').value;
+
+        // Bangun URL dengan parameter
+        const params = new URLSearchParams({
+            action: 'export_kerjasama',
+            search: search,
+            jenis: jenis,
+            status: status
+        });
+
+        // Buka tab baru untuk export
+        window.open(`pimpinan/export_excel.php?${params.toString()}`, '_blank');
+    }
 
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabPanes = document.querySelectorAll('.tab-pane');

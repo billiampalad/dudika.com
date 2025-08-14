@@ -18,6 +18,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const addDataBtn = document.getElementById('addDataBtn');
     const closeModalBtn = document.getElementById('closeModalBtn');
     const cancelModalBtn = document.getElementById('cancelModalBtn');
+    const editModal = document.getElementById('edit-modal');
+    const editModalContent = document.querySelector('.modal-content');
 
     // Variabel untuk menyimpan elemen yang aktif sebelum modal dibuka (untuk aksesibilitas)
     let activeElementBeforeModal;
@@ -265,9 +267,14 @@ document.addEventListener('DOMContentLoaded', function () {
     if (addModal) addModal.addEventListener('click', (e) => {
         if (e.target === addModal) closeModal(addModal, addModalContent);
     });
-    if (editModal) editModal.addEventListener('click', (e) => {
-        if (e.target === editModal) closeModal(editModal, editModalContent);
-    });
+
+    if (editModal) {
+        editModal.addEventListener('click', (e) => {
+            if (e.target === editModal) {
+                closeModal(editModal, editModalContent);
+            }
+        });
+    }
 
     // --- Form Submit Listeners ---
     if (addDataForm) addDataForm.addEventListener('submit', (e) => handleFormSubmit(e, addDataForm, () => closeModal(addModal, addModalContent)));

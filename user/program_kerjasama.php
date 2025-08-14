@@ -31,9 +31,9 @@ function getProgramStatus($start_date, $end_date)
     $end = new DateTime($end_date);
 
     if ($today < $start) {
-        return ['status' => 'Belum Dimulai', 'color' => 'bg-gray-500'];
+        return ['status' => 'Belum Dimulai', 'color' => 'bg-red-500'];
     } elseif ($today > $end) {
-        return ['status' => 'Selesai', 'color' => 'bg-gray-500'];
+        return ['status' => 'Selesai', 'color' => 'bg-blue-500'];
     } else {
         $interval = $today->diff($end);
         $days_left = $interval->days;

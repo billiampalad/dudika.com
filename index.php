@@ -260,8 +260,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 </body>
-
 </html>
 
 <script src="https://unpkg.com/alpinejs" defer></script>
-<script src="asset/index.js"></script>
+<script src="asset/pimpinan/js/index.js"></script>

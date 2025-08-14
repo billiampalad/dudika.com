@@ -162,12 +162,28 @@ if (!in_array($current_page, $valid_pages)) {
                     <h4 class="font-bold text-sm text-gray-800 mb-3">Statistik Singkat</h4>
                     <div class="space-y-2">
                         <div class="flex justify-between items-center">
-                            <span class="text-xs text-gray-600">Aktif</span>
-                            <span class="badge-success">4</span>
+                            <span class="text-xs text-gray-800">Aktif</span>
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-200 text-green-900">
+                                1
+                            </span>
                         </div>
                         <div class="flex justify-between items-center">
-                            <span class="text-xs text-gray-600">Tertunda</span>
-                            <span class="badge-danger">0</span>
+                            <span class="text-xs text-gray-800">Selesai</span>
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-200 text-blue-900">
+                                2
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-gray-800">Akan Berakhir</span>
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-200 text-yellow-900">
+                                0
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-gray-800">Belum Mulai</span>
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-200 text-red-900">
+                                2
+                            </span>
                         </div>
                     </div>
                 </div>
