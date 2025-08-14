@@ -158,8 +158,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="flex flex-col items-center justify-center w-full lg:w-1/2 space-y-4 sm:space-y-6">
                 <div class="relative flex items-center justify-center">
                     <div class="absolute inset-0 bg-gradient-to-r from-secondary-blue to-secondary-green rounded-full blur-xl opacity-40 animate-pulse-slow"></div>
-                    <div class="relative bg-white p-4 rounded-full shadow-lg animate-float w-36 sm:w-44 md:w-48 h-36 sm:h-44 md:h-48 flex items-center justify-center">
-                        <img src="asset/logo.png" alt="logo POLIMDO" class="object-contain h-28 sm:h-32 md:h-36 w-28 sm:w-32 md:w-36">
+                    <div class="relative bg-white p-4 rounded-full shadow-lg animate-float w-28 sm:w-44 md:w-48 h-28 sm:h-44 md:h-48 flex items-center justify-center">
+                        <img src="asset/logo.png" alt="logo POLIMDO"
+                            class="object-contain w-20 h-20 sm:w-32 sm:h-32 md:w-36 md:h-36">
                     </div>
                 </div>
                 <div class="text-center space-y-1 sm:space-y-2">
