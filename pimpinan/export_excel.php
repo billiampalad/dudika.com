@@ -21,6 +21,9 @@ try {
         case 'export_unit_pelaksana':
             export_unit_pelaksana($koneksi);
             break;
+        case 'export_program_kerjasam':
+            export_unit_pelaksana($koneksi);
+            break;
         case 'export_hasil_capaian':
             export_hasil_capaian($koneksi);
             break;

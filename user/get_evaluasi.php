@@ -37,5 +37,3 @@ if ($result->num_rows > 0) {
 } else {
     echo json_encode(['status' => 'error', 'message' => 'Data tidak ditemukan untuk ID: ' . $idKKS]);
 }
-
-$koneksi->close();

@@ -1,4 +1,5 @@
 <?php
+// Koneksi dan logika PHP awal Anda tetap sama
 $limit = 5; // Jumlah data per halaman
 $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
 $offset = ($page - 1) * $limit;
@@ -37,10 +38,17 @@ $stmt->close();
                 <h2 class="text-xl font-bold text-gray-800 tracking-tight">Hasil dan Capaian Kerjasama</h2>
                 <p class="text-sm text-gray-500 mt-1">Evaluasi dan rekam dampak dari setiap program kerjasama.</p>
             </div>
-            <button onclick="exportData()" class="bg-gradient-to-r from-emerald-600 to-green-500 text-white px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity flex items-center space-x-2 shadow-md hover:shadow-lg focus:ring-2 focus:ring-emerald-200 focus:ring-offset-2">
-                <i class="fas fa-file-excel fa-sm"></i>
-                <span class="text-sm font-medium">Export Excel</span>
-            </button>
+            <!-- === PERUBAHAN: Tombol Tambah dan Export dalam satu grup === -->
+            <div class="flex items-center gap-3">
+                <button onclick="showAddModal()" class="bg-gradient-to-r from-blue-600 to-sky-500 text-white px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity flex items-center space-x-2 shadow-md hover:shadow-lg focus:ring-2 focus:ring-blue-200 focus:ring-offset-2">
+                    <i class="fas fa-plus fa-sm"></i>
+                    <span class="text-sm font-medium">Tambah Capaian</span>
+                </button>
+                <button onclick="exportData()" class="bg-gradient-to-r from-emerald-600 to-green-500 text-white px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity flex items-center space-x-2 shadow-md hover:shadow-lg focus:ring-2 focus:ring-emerald-200 focus:ring-offset-2">
+                    <i class="fas fa-file-excel fa-sm"></i>
+                    <span class="text-sm font-medium">Export Excel</span>
+                </button>
+            </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -59,7 +67,7 @@ $stmt->close();
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                             <?php if (!empty($capaian_data)): ?>
+                            <?php if (!empty($capaian_data)): ?>
                                 <?php foreach ($capaian_data as $row): ?>
                                     <tr class="hover:bg-gray-50 transition-colors">
                                         <td class="px-6 py-4 whitespace-nowrap">
@@ -120,7 +128,47 @@ $stmt->close();
     </div>
 </main>
 
+<!-- === PERUBAHAN: Modal untuk Tambah Data === -->
+<div id="addModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-2xl rounded-lg shadow-xl transform transition-all duration-300 scale-95 opacity-0 max-h-[90vh] flex flex-col overflow-hidden border border-gray-200" id="addModalContent">
+        <div class="flex justify-between items-center px-6 py-4 border-b bg-gray-50">
+            <h3 class="text-lg font-semibold text-gray-800">Tambah Capaian Kerjasama Baru</h3>
+            <button onclick="closeAddModal()" class="text-gray-400 hover:text-gray-500 rounded-full w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="addCapaianForm" class="flex-grow overflow-y-auto p-6 space-y-6">
+            <div>
+                <label for="IdKKS" class="block text-sm font-medium text-gray-700 mb-1">Pilih Program Kerjasama</label>
+                <select id="IdKKS" name="IdKKS" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md" required>
+                    <option value="">Memuat program...</option>
+                </select>
+                <p class="text-xs text-gray-500 mt-1">Hanya program yang belum memiliki capaian yang akan ditampilkan.</p>
+            </div>
+            <div class="space-y-5">
+                <div class="flex items-center border-b pb-2"><i class="fas fa-chart-pie text-blue-500 mr-3"></i><h4 class="text-base font-semibold text-gray-700">Hasil & Dampak</h4></div>
+                <div><label for="add_txtHasilLangsung" class="block text-sm font-medium text-gray-700 mb-1">Hasil Langsung (Output)</label><textarea id="add_txtHasilLangsung" name="txtHasilLangsung" rows="3" class="mt-1 block w-full shadow-sm sm:text-sm focus:ring-blue-500 focus:border-blue-500 border border-gray-300 rounded-md p-3" required></textarea></div>
+                <div><label for="add_txtDampakJangkaMenengah" class="block text-sm font-medium text-gray-700 mb-1">Dampak Jangka Menengah (Outcome)</label><textarea id="add_txtDampakJangkaMenengah" name="txtDampakJangkaMenengah" rows="3" class="mt-1 block w-full shadow-sm sm:text-sm focus:ring-blue-500 focus:border-blue-500 border border-gray-300 rounded-md p-3" required></textarea></div>
+            </div>
+            <div class="space-y-5">
+                <div class="flex items-center border-b pb-2"><i class="fas fa-users text-blue-500 mr-3"></i><h4 class="text-base font-semibold text-gray-700">Rincian Manfaat</h4></div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div><label for="add_txtManfaatBgMhsw" class="block text-sm font-medium text-gray-700 mb-1">Bagi Mahasiswa</label><textarea id="add_txtManfaatBgMhsw" name="txtManfaatBgMhsw" rows="4" class="mt-1 block w-full shadow-sm sm:text-sm focus:ring-blue-500 focus:border-blue-500 border border-gray-300 rounded-md p-3" required></textarea></div>
+                    <div><label for="add_txtManfaatBgPolimdo" class="block text-sm font-medium text-gray-700 mb-1">Bagi Polimdo</label><textarea id="add_txtManfaatBgPolimdo" name="txtManfaatBgPolimdo" rows="4" class="mt-1 block w-full shadow-sm sm:text-sm focus:ring-blue-500 focus:border-blue-500 border border-gray-300 rounded-md p-3" required></textarea></div>
+                    <div><label for="add_txtManfaatBgDudika" class="block text-sm font-medium text-gray-700 mb-1">Bagi DUDIKA</label><textarea id="add_txtManfaatBgDudika" name="txtManfaatBgDudika" rows="4" class="mt-1 block w-full shadow-sm sm:text-sm focus:ring-blue-500 focus:border-blue-500 border border-gray-300 rounded-md p-3" required></textarea></div>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-3 pt-5 border-t border-gray-200">
+                <button type="button" onclick="closeAddModal()" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Batal</button>
+                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"><i class="fas fa-plus-circle fa-sm mr-2"></i>Tambah Capaian</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Edit (tidak ada perubahan) -->
 <div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <!-- ... Konten modal edit Anda yang sudah ada ... -->
     <div class="bg-white w-full max-w-2xl rounded-lg shadow-xl transform transition-all duration-300 scale-95 opacity-0 max-h-[90vh] flex flex-col overflow-hidden border border-gray-200" id="editModalContent">
         <div class="flex justify-between items-center px-6 py-4 border-b bg-gray-50">
             <h3 class="text-lg font-semibold text-gray-800">Detail & Edit Capaian</h3>
@@ -151,6 +199,7 @@ $stmt->close();
     </div>
 </div>
 
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -161,7 +210,12 @@ $stmt->close();
     const editModalContent = document.getElementById('editModalContent');
     const editCapaianForm = document.getElementById('editCapaianForm');
     const catatanPimpinanTextarea = document.getElementById('catatanPimpinan');
-    let benefitChart = null; // Variabel untuk menyimpan instance chart
+    let benefitChart = null;
+
+    // === PERUBAHAN: Elemen untuk Modal Tambah ===
+    const addModal = document.getElementById('addModal');
+    const addModalContent = document.getElementById('addModalContent');
+    const addCapaianForm = document.getElementById('addCapaianForm');
 
     const swalWithTailwind = {
         customClass: { popup: 'p-4 sm:p-6 w-full max-w-sm rounded-lg shadow-lg', title: 'text-xl font-semibold text-gray-800', htmlContainer: 'mt-2 text-sm text-gray-600', actions: 'mt-4 sm:mt-6', confirmButton: 'px-4 py-2 text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700' },
@@ -182,7 +236,39 @@ $stmt->close();
         }
     };
 
-    // === Fungsi Modal ===
+    // === PERUBAHAN: Fungsi untuk Modal Tambah ===
+    async function loadAvailablePrograms() {
+        const selectElement = document.getElementById('IdKKS');
+        selectElement.innerHTML = '<option value="">Memuat program...</option>';
+        const result = await apiCall('get_available_programs');
+        if (result.status === 'success' && result.data.length > 0) {
+            selectElement.innerHTML = '<option value="" disabled selected>-- Pilih Program Kerjasama --</option>';
+            result.data.forEach(program => {
+                const option = document.createElement('option');
+                option.value = program.IdKKS;
+                // Menampilkan nama kegiatan dan mitra untuk kejelasan
+                option.textContent = `${program.txtNamaKegiatanKS} (Mitra: ${program.txtNamaMitraDudika})`;
+                selectElement.appendChild(option);
+            });
+        } else {
+            selectElement.innerHTML = '<option value="">Tidak ada program yang tersedia</option>';
+        }
+    }
+
+    function showAddModal() {
+        activeElementBeforeModal = document.activeElement;
+        addCapaianForm.reset(); // Bersihkan form setiap kali dibuka
+        loadAvailablePrograms(); // Muat program yang tersedia
+        addModal.classList.remove('hidden');
+        setTimeout(() => addModalContent.classList.remove('opacity-0', 'scale-95'), 10);
+    }
+
+    function closeAddModal() {
+        addModalContent.classList.add('opacity-0', 'scale-95');
+        setTimeout(() => addModal.classList.add('hidden'), 300);
+    }
+
+    // === Fungsi Modal Edit (tidak berubah) ===
     async function showEditModal(triggerElement, id) {
         activeElementBeforeModal = triggerElement || document.activeElement;
         const result = await apiCall(`get_single_capaian&id=${id}`);
@@ -203,7 +289,7 @@ $stmt->close();
         setTimeout(() => editModal.classList.add('hidden'), 300);
     }
     
-    // === Fungsi Halaman ===
+    // === Fungsi Halaman (tidak berubah) ===
     function exportData() {
         window.open('pimpinan/export_excel.php?action=export_hasil_capaian', '_blank');
     }
@@ -224,7 +310,7 @@ $stmt->close();
         const result = await apiCall('get_chart_data');
         if (result.status === 'success') {
             const ctx = document.getElementById('benefitChart').getContext('2d');
-            if(benefitChart) benefitChart.destroy(); // Hapus chart lama jika ada
+            if(benefitChart) benefitChart.destroy();
             benefitChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -244,19 +330,17 @@ $stmt->close();
     
     // === Event Listeners ===
     document.addEventListener('DOMContentLoaded', async () => {
-        // Muat data chart saat halaman dibuka
         loadChartData();
-        // Muat catatan pimpinan
         const noteResult = await apiCall('get_note');
         if(noteResult.status === 'success') {
             catatanPimpinanTextarea.value = noteResult.data;
         }
     });
 
+    // Event listener untuk form Edit
     editCapaianForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         const formData = new FormData(editCapaianForm);
-        formData.append('action', 'update_capaian');
         
         const result = await apiCall('update_capaian', { method: 'POST', body: formData });
         
@@ -266,10 +350,32 @@ $stmt->close();
             window.location.reload();
         }
     });
+
+    // === PERUBAHAN: Event listener untuk form Tambah ===
+    addCapaianForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const formData = new FormData(addCapaianForm);
+
+        const result = await apiCall('add_capaian', { method: 'POST', body: formData });
+
+        if (result.status === 'success') {
+            closeAddModal();
+            await Swal.fire({ ...swalWithTailwind, icon: 'success', title: 'Berhasil Ditambahkan!', text: 'Data capaian baru telah disimpan.', timer: 2000, showConfirmButton: false });
+            window.location.reload();
+        } else {
+             Swal.fire({ ...swalWithTailwind, icon: 'error', title: 'Gagal!', text: result.message || 'Terjadi kesalahan saat menyimpan data.' });
+        }
+    });
     
     // Event listener untuk menutup modal
     editModal.addEventListener('click', (e) => { if (e.target === editModal) closeEditModal(); });
-    window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !editModal.classList.contains('hidden')) closeEditModal(); });
+    addModal.addEventListener('click', (e) => { if (e.target === addModal) closeAddModal(); }); // Tambahan untuk modal add
+    window.addEventListener('keydown', (e) => { 
+        if (e.key === 'Escape') {
+            if (!editModal.classList.contains('hidden')) closeEditModal();
+            if (!addModal.classList.contains('hidden')) closeAddModal();
+        }
+    });
 </script>
 
 <?php

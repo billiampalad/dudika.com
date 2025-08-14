@@ -20,6 +20,14 @@ switch ($action) {
     case 'update_capaian':
         update_capaian($koneksi);
         break;
+    // === PERUBAHAN: Aksi baru ditambahkan ===
+    case 'add_capaian':
+        add_capaian($koneksi);
+        break;
+    case 'get_available_programs':
+        get_available_programs($koneksi);
+        break;
+    // =======================================
     case 'get_chart_data':
         get_chart_data($koneksi);
         break;
@@ -35,6 +43,70 @@ switch ($action) {
 $koneksi->close();
 
 // --- FUNGSI-FUNGSI AKSI ---
+
+// === PERUBAHAN: Fungsi untuk membuat ID baru ===
+function generate_new_id($koneksi, $prefix, $table, $column) {
+    $sql = "SELECT $column FROM $table WHERE $column LIKE '$prefix%' ORDER BY $column DESC LIMIT 1";
+    $result = $koneksi->query($sql);
+    if ($result->num_rows > 0) {
+        $last_id = $result->fetch_assoc()[$column];
+        $number = (int)substr($last_id, strlen($prefix)) + 1;
+    } else {
+        $number = 1;
+    }
+    return $prefix . str_pad($number, 3, '0', STR_PAD_LEFT);
+}
+
+// === PERUBAHAN: Fungsi untuk mendapatkan program yang belum punya capaian ===
+function get_available_programs($koneksi) {
+    $sql = "SELECT 
+                k.IdKKS, 
+                k.txtNamaKegiatanKS, 
+                m.txtNamaMitraDudika
+            FROM 
+                tblnamakegiatanks k
+            JOIN 
+                tblmitradudika m ON k.IdMitraDudika = m.IdMitraDudika
+            WHERE 
+                k.IdKKS NOT IN (SELECT IdKKS FROM tblhasildancapaian)
+            ORDER BY 
+                k.dtMOU DESC";
+    
+    $result = $koneksi->query($sql);
+    $data = $result->fetch_all(MYSQLI_ASSOC);
+    echo json_encode(['status' => 'success', 'data' => $data]);
+}
+
+// === PERUBAHAN: Fungsi untuk menambah data capaian baru ===
+function add_capaian($koneksi) {
+    $idKKS = $_POST['IdKKS'] ?? '';
+    if (empty($idKKS)) {
+        echo json_encode(['status' => 'error', 'message' => 'Program kerjasama harus dipilih.']); exit;
+    }
+
+    $new_id = generate_new_id($koneksi, 'HDC', 'tblhasildancapaian', 'idHslDanCap');
+    
+    $sql = "INSERT INTO tblhasildancapaian 
+                (idHslDanCap, IdKKS, txtHasilLangsung, txtDampakJangkaMenengah, txtManfaatBgMhsw, txtManfaatBgPolimdo, txtManfaatBgDudika) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)";
+            
+    $stmt = $koneksi->prepare($sql);
+    $stmt->bind_param('sssssss', 
+        $new_id,
+        $idKKS,
+        $_POST['txtHasilLangsung'], 
+        $_POST['txtDampakJangkaMenengah'], 
+        $_POST['txtManfaatBgMhsw'], 
+        $_POST['txtManfaatBgPolimdo'], 
+        $_POST['txtManfaatBgDudika']
+    );
+    
+    $success = $stmt->execute();
+    $stmt->close();
+    
+    echo $success ? json_encode(['status' => 'success']) : json_encode(['status' => 'error', 'message' => 'Gagal menyimpan data ke database.']);
+}
+
 
 function get_single_capaian($koneksi) {
     $id = $_GET['id'] ?? 0;

@@ -35,11 +35,13 @@ if ($sesuaiRencana == 0 || $kualitasPelaks == 0 || $keterlibatanMitra == 0 || $e
 }
 
 // Validasi range nilai (1-5)
-if ($sesuaiRencana < 1 || $sesuaiRencana > 5 || 
-    $kualitasPelaks < 1 || $kualitasPelaks > 5 || 
-    $keterlibatanMitra < 1 || $keterlibatanMitra > 5 || 
-    $efisiensi < 1 || $efisiensi > 5 || 
-    $kepuasan < 1 || $kepuasan > 5) {
+if (
+    $sesuaiRencana < 1 || $sesuaiRencana > 5 ||
+    $kualitasPelaks < 1 || $kualitasPelaks > 5 ||
+    $keterlibatanMitra < 1 || $keterlibatanMitra > 5 ||
+    $efisiensi < 1 || $efisiensi > 5 ||
+    $kepuasan < 1 || $kepuasan > 5
+) {
     echo json_encode(['status' => 'error', 'message' => 'Nilai rating harus antara 1-5.']);
     exit;
 }
@@ -80,34 +82,43 @@ $koneksi->begin_transaction();
 try {
     // Simpan evaluasi ke database
     $insertQuery = "INSERT INTO tblevaluasikinerja 
-                    (IdEvKinerja, txtSesuaiRencana, txtKualitasPelaks, txtKeterlibatanMtra, txtEfisiensiPenggSbDya, txtKepuasanPhkTerkait, IdKKS) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?)";
-    
-    $stmt = $koneksi->prepare($insertQuery);
+                (IdEvKinerja, txtSesuaiRencana, txtKualitasPelaks, txtKeterlibatanMtra, 
+                 txtEfisiensiPenggSbDya, txtKepuasanPhkTerkait, dtEvaluasi, IdKKS) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    $stmt->bind_param(
+        "siiiiiss",
+        $idEvKinerja,
+        $sesuaiRencana,
+        $kualitasPelaks,
+        $keterlibatanMitra,
+        $efisiensi,
+        $kepuasan,
+        $tanggalEvaluasi,
+        $idKKS
+    );
     if (!$stmt) {
         throw new Exception('Prepare statement gagal: ' . $koneksi->error);
     }
-    
+
     $stmt->bind_param("siiiiis", $idEvKinerja, $sesuaiRencana, $kualitasPelaks, $keterlibatanMitra, $efisiensi, $kepuasan, $idKKS);
-    
+
     if (!$stmt->execute()) {
         throw new Exception('Execute statement gagal: ' . $stmt->error);
     }
-    
+
     $stmt->close();
-    
+
     // Commit transaksi
     $koneksi->commit();
-    
+
     echo json_encode([
-        'status' => 'success', 
+        'status' => 'success',
         'message' => 'Evaluasi berhasil disimpan.',
         'data' => [
             'IdEvKinerja' => $idEvKinerja,
             'IdKKS' => $idKKS
         ]
     ]);
-    
 } catch (Exception $e) {
     // Rollback jika terjadi error
     $koneksi->rollback();
@@ -116,4 +127,3 @@ try {
 }
 
 $koneksi->close();
-?>

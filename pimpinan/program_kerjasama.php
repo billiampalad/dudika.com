@@ -112,9 +112,15 @@ if ($total_data > 0) {
         <div>
             <h2 class="text-xl font-bold text-gray-800 tracking-tight">Program Kerjasama</h2>
         </div>
-        <button onclick="showAddEditModal(this)" class="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center space-x-2 shadow-md hover:shadow-lg focus:ring-2 focus:ring-blue-200 focus:ring-offset-2">
-            <i class="fas fa-plus fa-sm"></i><span class="text-sm font-medium">Tambah Kerjasama</span>
-        </button>
+        <div class="flex items-center gap-3">
+            <button onclick="showAddEditModal(this)" class="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center space-x-2 shadow-md hover:shadow-lg focus:ring-2 focus:ring-blue-200 focus:ring-offset-2">
+                <i class="fas fa-plus fa-sm"></i><span class="text-sm font-medium">Tambah Kerjasama</span>
+            </button>
+            <button onclick="exportData()" class="bg-gradient-to-r from-emerald-600 to-green-500 text-white px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity flex items-center space-x-2 shadow-md hover:shadow-lg focus:ring-2 focus:ring-emerald-200 focus:ring-offset-2">
+                <i class="fas fa-file-excel fa-sm"></i>
+                <span class="text-sm font-medium">Export Excel</span>
+            </button>
+        </div>
     </div>
 
     <form id="filterForm" onsubmit="return false;">
@@ -680,12 +686,17 @@ if ($total_data > 0) {
             const statusValue = filterStatus?.value || '';
             const tbody = document.querySelector('tbody');
             const mobileContainer = document.querySelector('.block.sm\\:hidden .space-y-3');
-            
+
             if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4"><i class="fas fa-spinner fa-spin"></i> Memuat data...</td></tr>';
             if (mobileContainer) mobileContainer.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin"></i> Memuat data...</div>';
 
             try {
-                const params = new URLSearchParams({ action: 'search', search: searchValue, jenis: jenisValue, status: statusValue });
+                const params = new URLSearchParams({
+                    action: 'search',
+                    search: searchValue,
+                    jenis: jenisValue,
+                    status: statusValue
+                });
                 const response = await fetch(`pimpinan/kerjasama_action.php?${params.toString()}`);
 
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -720,7 +731,7 @@ if ($total_data > 0) {
                         const d = data.data;
                         document.getElementById('detailModalTitle').textContent = escapeHtml(d.info.txtNamaKegiatanKS);
                         document.getElementById('detailModalSubtitle').textContent = `ID: ${escapeHtml(d.info.IdKKS)}`;
-                        
+
                         document.getElementById('info').innerHTML = `<dl class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                             ${createInfoItem('Jenis Kerjasama', escapeHtml(d.info.txtNamaJenisKS))}
                             ${createInfoItem('Mitra', escapeHtml(d.info.txtNamaMitraDudika))}
@@ -732,7 +743,7 @@ if ($total_data > 0) {
 
                         document.getElementById('tujuan').innerHTML = `<dl class="space-y-4">${createInfoItem('Tujuan Kerjasama', d.tujuan?.txtTujuanKS?.replace(/\n/g, '<br>') || '-')}${createInfoItem('Sasaran', d.tujuan?.txtSasaranKS?.replace(/\n/g, '<br>') || '-')}</dl>`;
                         document.getElementById('pelaksanaan').innerHTML = `<dl class="space-y-4">${createInfoItem('Deskripsi', d.pelaksanaan?.txtDeskripsiKeg?.replace(/\n/g, '<br>') || '-')}${createInfoItem('Cakupan/Skala', escapeHtml(d.pelaksanaan?.txtCakupanDanSkalaKeg) || '-')}${createInfoItem('Jumlah Peserta', d.pelaksanaan?.intJumlahPeserta || '-')}</dl>`;
-                        
+
                         const fotoHtml = d.info.pathFoto_base64 ?
                             `<img src="data:image/jpeg;base64,${d.info.pathFoto_base64}" alt="Dokumentasi" class="h-48 w-full object-cover rounded-md border cursor-pointer" onclick="showImageModal('${d.info.pathFoto_base64}')">` :
                             '<span class="text-sm text-gray-500">Tidak ada foto</span>';
@@ -761,7 +772,7 @@ if ($total_data > 0) {
             modalTitle.textContent = id ? 'Edit Program Kerjasama' : 'Tambah Program Kerjasama';
             submitButtonText.textContent = id ? 'Simpan Perubahan' : 'Tambah';
             document.getElementById('kerjasamaId').value = id || '';
-            
+
             document.getElementById('currentPhoto').classList.add('hidden');
             document.getElementById('photoPreview').src = '';
             document.getElementById('pathFoto').value = ''; // Reset file input
@@ -820,7 +831,7 @@ if ($total_data > 0) {
                         const formData = new FormData();
                         formData.append('action', 'delete');
                         formData.append('IdKKS', id);
-                        
+
                         const response = await fetch('pimpinan/kerjasama_action.php', {
                             method: 'POST',
                             body: formData
@@ -829,7 +840,7 @@ if ($total_data > 0) {
                         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                         const responseText = await response.text();
                         let res;
-                        
+
                         try {
                             res = JSON.parse(responseText);
                         } catch (parseError) {
@@ -873,6 +884,24 @@ if ($total_data > 0) {
             });
         };
 
+        function exportData() {
+            // Ambil parameter filter yang aktif
+            const search = document.getElementById('searchInput').value;
+            const jenis = document.getElementById('filterJenis').value;
+            const status = document.getElementById('filterStatus').value;
+
+            // Bangun URL dengan parameter
+            const params = new URLSearchParams({
+                action: 'export_kerjasama', // Pastikan ini sesuai dengan action di PHP
+                search: search,
+                jenis: jenis,
+                status: status
+            });
+
+            // Buka tab baru untuk export
+            window.open(`pimpinan/export_excel.php?${params.toString()}`, '_blank');
+        }
+
         // Event listener untuk submit form tambah/edit
         addEditForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -911,7 +940,7 @@ if ($total_data > 0) {
                 submitButtonText.textContent = originalButtonText;
             }
         });
-        
+
         // Event listener untuk pratinjau foto
         const photoInput = document.getElementById('pathFoto');
         if (photoInput) {
@@ -927,7 +956,7 @@ if ($total_data > 0) {
                 }
             });
         }
-        
+
         // Event listeners untuk filter dan pencarian
         if (filterForm) {
             filterForm.addEventListener('submit', (e) => {
