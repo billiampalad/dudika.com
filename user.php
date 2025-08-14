@@ -61,11 +61,13 @@ if (!in_array($current_page, $valid_pages)) {
                     </div>
 
                     <!-- Title -->
-                    <div class="flex flex-col">
+                    <div class="hidden sm:flex flex-col">
                         <h1 class="text-sm sm:text-lg md:text-xl font-bold bg-gradient-to-r from-red-500 to-green-500 bg-clip-text text-transparent leading-tight">
                             POLIMDO & DUDIKA
                         </h1>
-                        <p class="text-xs text-gray-500 font-medium leading-tight">Sistem Informasi Kerjasama</p>
+                        <p class="text-xs text-gray-500 font-medium leading-tight">
+                            Sistem Informasi Kerjasama
+                        </p>
                     </div>
                 </div>
 

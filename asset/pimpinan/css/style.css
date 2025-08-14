@@ -334,6 +334,11 @@ html[data-theme='dark'] .btn-secondary:hover {
     /* Hover tombol sekunder */
 }
 
+/* Sidebar toggle icon warna di dark mode */
+html[data-theme='dark'] #sidebarToggle i {
+    color: var(--text-dark); /* pakai warna teks terang yang sudah ada di variabel */
+}
+
 body {
     background: var(--background);
     background-image:

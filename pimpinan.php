@@ -60,29 +60,42 @@ $is_data_master_page_active = in_array($current_page, $data_master_pages);
         <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
             <div class="flex justify-between items-center h-16 sm:h-20">
                 <div class="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
-                    <button id="sidebarToggle" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-colors hover:bg-gray-200/60 dark:hover:bg-slate-700/60 lg:hidden">
-                        <i class="fa-solid fa-bars-staggered text-gray-600 dark:text-slate-300 text-xs sm:text-sm"></i>
+                    <button id="sidebarToggle"
+                        class="lg:hidden text-gray-600 hover:text-gray-900 focus:outline-none mr-2 sm:mr-0">
+                        <i class="fa-solid fa-bars-staggered text-base sm:text-lg"></i>
                     </button>
-                    <div class="logo-container background-icon w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center">
-                        <img src="asset/logo.png" alt="Logo" class="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7">
+
+                    <div class="logo-container background-icon w-9 h-9 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center">
+                        <img src="asset/logo.png" alt="Logo" class="w-7 h-7 sm:w-6 sm:h-6 md:w-7 md:h-7">
                     </div>
-                    <div class="block">
-                        <h1 class="text-sm sm:text-base md:text-lg font-bold text-gray-800">POLIMDO & DUDIKA</h1>
-                        <p class="text-xs sm:text-xs text-gray-600">Sistem Informasi Kerjasama</p>
+
+                    <div class="hidden sm:block">
+                        <h1 class="text-xs sm:text-base md:text-lg font-bold text-gray-800">
+                            POLIMDO & DUDIKA
+                        </h1>
+                        <p class="hidden sm:block text-xs text-gray-600">
+                            Sistem Informasi Kerjasama
+                        </p>
                     </div>
                 </div>
 
-                <div class="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
-                    <button id="darkModeToggle" class="nav-button w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center">
-                        <i class="fas fa-moon text-gray-600 text-xs sm:text-sm"></i>
+                <div class="flex items-center space-x-3 sm:space-x-3 md:space-x-4">
+                    <button id="darkModeToggle"
+                        class="nav-button w-9 h-9 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center">
+                        <i class="fas fa-moon text-sm sm:text-sm md:text-lg"></i>
                     </button>
-                    <div class="flex items-center space-x-2 sm:space-x-3">
-                        <div class="block">
-                            <span class="text-xs sm:text-sm font-semibold text-gray-800"><?php echo htmlspecialchars($user['nama_lengkap']); ?></span>
+
+                    <div class="flex items-center space-x-3 sm:space-x-2 md:space-x-3">
+                        <div class="flex flex-col items-center">
+                            <span class="text-xs sm:text-sm font-semibold text-white background-icon px-1 rounded-full shadow-md">
+                                <?php echo htmlspecialchars($user['nama_lengkap']); ?>
+                            </span>
                             <p class="text-[10px] sm:text-xs text-gray-600">Wakil Direktur 4</p>
                         </div>
-                        <button id="logoutBtn" class="nav-button w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center text-red-500 hover:bg-red-50">
-                            <i class="fas fa-sign-out-alt text-xs sm:text-sm"></i>
+
+                        <button id="logoutBtn"
+                            class="nav-button w-9 h-9 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center text-red-500 hover:bg-red-50">
+                            <i class="fas fa-sign-out-alt text-sm md:text-lg"></i>
                         </button>
                     </div>
                 </div>
