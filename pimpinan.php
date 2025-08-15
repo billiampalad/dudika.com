@@ -86,11 +86,24 @@ $is_data_master_page_active = in_array($current_page, $data_master_pages);
                     </button>
 
                     <div class="flex items-center space-x-3 sm:space-x-2 md:space-x-3">
-                        <div class="flex flex-col items-center">
-                            <span class="text-xs sm:text-sm font-semibold text-white background-icon px-1 rounded-full shadow-md">
-                                <?php echo htmlspecialchars($user['nama_lengkap']); ?>
-                            </span>
-                            <p class="text-[10px] sm:text-xs text-gray-600">Wakil Direktur 4</p>
+                        <div class="flex flex-col items-center gap-1">
+                            <div class="relative group">
+                                <!-- Nama truncated di mobile -->
+                                <span
+                                    class="block max-w-[150px] sm:max-w-none truncate text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 px-3 py-1 rounded-full shadow-md cursor-pointer transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg">
+                                    <?php echo htmlspecialchars($user['nama_lengkap']); ?>
+                                </span>
+
+                                <!-- Tooltip muncul saat hover -->
+                                <div
+                                    class="absolute top-1/2 right-full -translate-y-1/2 mr-2 opacity-0 group-hover:opacity-100 pointer-events-none bg-gray-800 text-white text-[10px] px-2 py-1 rounded-md shadow-md whitespace-nowrap transition-opacity duration-300 sm:hidden">
+                                    <?php echo htmlspecialchars($user['nama_lengkap']); ?>
+                                </div>
+                            </div>
+
+                            <p class="text-[10px] sm:text-sm text-gray-600 font-medium">
+                                Wakil Direktur 4 <span class="hidden sm:inline">(Polimdo)</span>
+                            </p>
                         </div>
 
                         <button id="logoutBtn"
@@ -105,40 +118,47 @@ $is_data_master_page_active = in_array($current_page, $data_master_pages);
 
     <div class="flex pt-16 sm:pt-20">
         <aside id="sidebar" class="nav-gradient w-64 sm:w-70 fixed h-screen overflow-y-auto py-4 sm:py-6 shadow-xl z-40 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0">
-            <div class="px-2 space-y-1 sm:space-y-3">
-                <a href="?page=dashboard" class="menu-item submenu-item block w-full text-left px-3 sm:px-4 py-3 sm:py-1.5 rounded-xl flex items-center space-x-2 sm:space-x-3 <?php echo ($current_page == 'dashboard') ? 'active' : ''; ?>">
-                    <div class="background-icon w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-xl shadow-sm">
-                        <i class="fas fa-tachometer-alt text-sm sm:text-base w-4 sm:w-5 text-center text-white group-hover:text-orange-500"></i>
+            <div class="px-2 space-y-1 sm:space-y-1">
+                <a href="?page=dashboard"
+                    class="menu-item submenu-item block w-full text-left px-5 py-3 rounded-xl flex items-center space-x-3 <?php echo ($current_page == 'dashboard') ? 'active' : ''; ?>">
+                    <div class="background-icon w-7 h-7 flex items-center justify-center rounded-xl shadow-sm">
+                        <i class="fas fa-tachometer-alt text-base w-5 text-center text-white group-hover:text-orange-500"></i>
                     </div>
                     <span class="font-medium text-sm">Dashboard</span>
                 </a>
 
                 <div class="relative">
-                    <button id="dataMasterBtn" class="menu-item submenu-item w-full text-left px-3 sm:px-4 py-3 sm:py-1.5 rounded-xl flex items-center justify-between <?php echo $is_data_master_page_active ? 'active' : ''; ?>">
-                        <div class="flex items-center space-x-2 sm:space-x-3">
-                            <div class="flex items-center justify-center background-icon w-6 h-6 sm:w-7 sm:h-7 bg-white rounded-xl shadow-sm">
-                                <i class="fas fa-database text-white text-sm sm:text-base w-4 sm:w-5 text-center"></i>
+                    <button id="dataMasterBtn"
+                        class="menu-item submenu-item w-full text-left px-5 py-3 rounded-xl flex items-center justify-between <?php echo $is_data_master_page_active ? 'active' : ''; ?>">
+                        <div class="flex items-center space-x-3">
+                            <div class="flex items-center justify-center background-icon w-7 h-7 bg-white rounded-xl shadow-sm">
+                                <i class="fas fa-database text-white text-base w-5 text-center"></i>
                             </div>
                             <span class="font-medium text-sm">Data Master</span>
                         </div>
-                        <i id="dataMasterIcon" class="fas fa-chevron-down icon-rotate transition-transform text-sm <?php echo $is_data_master_page_active ? 'rotated' : ''; ?>"></i>
+                        <i id="dataMasterIcon"
+                            class="fas fa-chevron-down icon-rotate transition-transform text-sm <?php echo $is_data_master_page_active ? 'rotated' : ''; ?>"></i>
                     </button>
 
-                    <div id="dataMasterDropdown" class="mt-1 sm:mt-2 ml-3 sm:ml-4 space-y-1 <?php echo !$is_data_master_page_active ? 'hidden' : ''; ?>">
-                        <a href="?page=mitra" class="menu-item submenu-item block pl-2 sm:pl-3 pr-3 sm:pr-4 py-3 sm:py-1.5 rounded-lg text-gray-600 hover:text-gray-800 flex items-center space-x-2 sm:space-x-3 <?php echo ($current_page == 'mitra') ? 'active' : ''; ?>">
-                            <div class="w-6 sm:w-8 flex justify-center">
+                    <div id="dataMasterDropdown"
+                        class="mt-2 ml-10 <?php echo !$is_data_master_page_active ? 'hidden' : ''; ?>">
+                        <a href="?page=mitra"
+                            class="menu-item submenu-item block pl-5 pr-4 py-3 rounded-lg text-gray-600 hover:text-gray-800 flex items-center space-x-3 <?php echo ($current_page == 'mitra') ? 'active' : ''; ?>">
+                            <div class="w-3 flex justify-center">
                                 <i class="fas fa-building text-xs w-3 text-center"></i>
                             </div>
                             <span class="text-sm">Mitra Kerjasama</span>
                         </a>
-                        <a href="?page=jenis_kerjasama" class="menu-item submenu-item block pl-2 sm:pl-3 pr-3 sm:pr-4 py-3 sm:py-1.5 rounded-lg text-gray-600 hover:text-gray-800 flex items-center space-x-2 sm:space-x-3 <?php echo ($current_page == 'jenis_kerjasama') ? 'active' : ''; ?>">
-                            <div class="w-6 sm:w-8 flex justify-center">
+                        <a href="?page=jenis_kerjasama"
+                            class="menu-item submenu-item block pl-5 pr-4 py-3 rounded-lg text-gray-600 hover:text-gray-800 flex items-center space-x-3 <?php echo ($current_page == 'jenis_kerjasama') ? 'active' : ''; ?>">
+                            <div class="w-3 flex justify-center">
                                 <i class="fas fa-project-diagram text-xs w-3 text-center"></i>
                             </div>
                             <span class="text-sm">Jenis Kerjasama</span>
                         </a>
-                        <a href="?page=unit_pelaksana" class="menu-item submenu-item block pl-2 sm:pl-3 pr-3 sm:pr-4 py-3 sm:py-1.5 rounded-lg text-gray-600 hover:text-gray-800 flex items-center space-x-2 sm:space-x-3 <?php echo ($current_page == 'unit_pelaksana') ? 'active' : ''; ?>">
-                            <div class="w-6 sm:w-8 flex justify-center">
+                        <a href="?page=unit_pelaksana"
+                            class="menu-item submenu-item block pl-5 pr-4 py-3 rounded-lg text-gray-600 hover:text-gray-800 flex items-center space-x-3 <?php echo ($current_page == 'unit_pelaksana') ? 'active' : ''; ?>">
+                            <div class="w-3 flex justify-center">
                                 <i class="fas fa-users-cog text-xs w-3 text-center"></i>
                             </div>
                             <span class="text-sm">Unit Pelaksana</span>
@@ -146,30 +166,34 @@ $is_data_master_page_active = in_array($current_page, $data_master_pages);
                     </div>
                 </div>
 
-                <a href="?page=program_kerjasama" class="menu-item submenu-item block w-full text-left px-3 sm:px-4 py-3 sm:py-1.5 rounded-xl flex items-center space-x-2 sm:space-x-3 <?php echo ($current_page == 'program_kerjasama') ? 'active' : ''; ?>">
-                    <div class="flex items-center justify-center background-icon w-6 h-6 sm:w-7 sm:h-7 bg-white rounded-xl shadow-sm">
-                        <i class="fas fa-handshake text-white text-sm sm:text-base w-4 sm:w-5 text-center"></i>
+                <a href="?page=program_kerjasama"
+                    class="menu-item submenu-item block w-full text-left px-5 py-3 rounded-xl flex items-center space-x-3 <?php echo ($current_page == 'program_kerjasama') ? 'active' : ''; ?>">
+                    <div class="flex items-center justify-center background-icon w-7 h-7 bg-white rounded-xl shadow-sm">
+                        <i class="fas fa-handshake text-white text-base w-5 text-center"></i>
                     </div>
                     <span class="font-medium text-sm">Program Kerjasama</span>
                 </a>
 
-                <a href="?page=hasil_capaian" class="menu-item submenu-item block w-full text-left px-3 sm:px-4 py-3 sm:py-1.5 rounded-xl flex items-center space-x-2 sm:space-x-3 <?php echo ($current_page == 'hasil_capaian') ? 'active' : ''; ?>">
-                    <div class="flex items-center justify-center background-icon w-6 h-6 sm:w-7 sm:h-7 bg-white rounded-xl shadow-sm">
-                        <i class="fas fa-chart-line text-white text-sm sm:text-base w-4 sm:w-5 text-center"></i>
+                <a href="?page=hasil_capaian"
+                    class="menu-item submenu-item block w-full text-left px-5 py-3 rounded-xl flex items-center space-x-3 <?php echo ($current_page == 'hasil_capaian') ? 'active' : ''; ?>">
+                    <div class="flex items-center justify-center background-icon w-7 h-7 bg-white rounded-xl shadow-sm">
+                        <i class="fas fa-chart-line text-white text-base w-5 text-center"></i>
                     </div>
                     <span class="font-medium text-sm">Hasil & Capaian</span>
                 </a>
 
-                <a href="?page=evaluasi_kinerja" class="menu-item submenu-item block w-full text-left px-3 sm:px-4 py-3 sm:py-1.5 rounded-xl flex items-center space-x-2 sm:space-x-3 <?php echo ($current_page == 'evaluasi_kinerja') ? 'active' : ''; ?>">
-                    <div class="flex items-center justify-center background-icon w-6 h-6 sm:w-7 sm:h-7 bg-white rounded-xl shadow-sm">
-                        <i class="fas fa-star-half-alt text-white text-sm sm:text-base w-4 sm:w-5 text-center"></i>
+                <a href="?page=evaluasi_kinerja"
+                    class="menu-item submenu-item block w-full text-left px-5 py-3 rounded-xl flex items-center space-x-3 <?php echo ($current_page == 'evaluasi_kinerja') ? 'active' : ''; ?>">
+                    <div class="flex items-center justify-center background-icon w-7 h-7 bg-white rounded-xl shadow-sm">
+                        <i class="fas fa-star-half-alt text-white text-base w-5 text-center"></i>
                     </div>
                     <span class="font-medium text-sm">Evaluasi Kinerja</span>
                 </a>
 
-                <a href="?page=permasalahan_solusi" class="menu-item submenu-item block w-full text-left px-3 sm:px-4 py-3 sm:py-1.5 rounded-xl flex items-center space-x-2 sm:space-x-3 <?php echo ($current_page == 'permasalahan_solusi') ? 'active' : ''; ?>">
-                    <div class="flex items-center justify-center background-icon w-6 h-6 sm:w-7 sm:h-7 bg-white rounded-xl shadow-sm">
-                        <i class="fas fa-tools text-white text-sm sm:text-base w-4 sm:w-5 text-center"></i>
+                <a href="?page=permasalahan_solusi"
+                    class="menu-item submenu-item block w-full text-left px-5 py-3 rounded-xl flex items-center space-x-3 <?php echo ($current_page == 'permasalahan_solusi') ? 'active' : ''; ?>">
+                    <div class="flex items-center justify-center background-icon w-7 h-7 bg-white rounded-xl shadow-sm">
+                        <i class="fas fa-tools text-white text-base w-5 text-center"></i>
                     </div>
                     <span class="font-medium text-sm">Solusi & Masalah</span>
                 </a>

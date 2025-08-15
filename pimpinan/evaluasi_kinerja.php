@@ -195,7 +195,7 @@ $stmt->close();
 
         // === Fungsi Backend Communication ===
         const apiCall = async (action, options = {}) => {
-            const url = `pimpinan/evaluasi_action.php?action=${action}`; // Sesuaikan path jika perlu
+            const url = `pimpinan/evaluasi_action.php?action=${action}`;
             try {
                 const response = await fetch(url, options);
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);

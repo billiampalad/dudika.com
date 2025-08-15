@@ -75,26 +75,10 @@ $json_top_5_mitra = json_encode($top_5_mitra);
     <div class="space-y-8">
         <header class="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
-                <h2 class="text-xl font-bold text-gray-800 tracking-tight">Dashboard Overview</h2>
+                <h2 class="text-xl font-bold text-gray-800 tracking-tight text-center sm:text-left">Dashboard Overview</h2>
                 <p class="text-sm text-gray-500 mt-1">Ringkasan statistik dan aktivitas terbaru</p>
             </div>
             <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-                <!-- <div
-                    class="relative inline-block text-left group">
-                    <button
-                        class="btn-export bg-gradient-to-r from-emerald-600 to-green-500 text-white px-5 py-2.5 rounded-lg hover:opacity-90 transition-all flex items-center space-x-2 shadow hover:shadow-md active:scale-[0.98] w-full sm:w-auto justify-center">
-                        <i class="fas fa-download mr-2 text-sm"></i>
-                        Export Data
-                    </button>
-
-                    <div
-                        class="absolute mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                        <a href="http://localhost/wd4/pimpinan.php?page=mitra" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Mitra Kerjasama</a>
-                        <a href="http://localhost/wd4/pimpinan.php?page=jenis_kerjasama" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Jenis Kerjasama</a>
-                        <a href="http://localhost/wd4/pimpinan.php?page=unit_pelaksana" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Unit Pelaksana</a>
-                    </div>
-                </div> -->
-
                 <div class="relative inline-block text-left group">
                     <!-- Tombol Tambah Data -->
                     <button
