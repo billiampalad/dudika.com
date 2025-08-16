@@ -141,7 +141,7 @@ $is_data_master_page_active = in_array($current_page, $data_master_pages);
                     </button>
 
                     <div id="dataMasterDropdown"
-                        class="mt-3 ml-10 <?php echo !$is_data_master_page_active ? 'hidden' : ''; ?>">
+                        class="mt-1 ml-10 <?php echo !$is_data_master_page_active ? 'hidden' : ''; ?>">
                         <a href="?page=mitra"
                             class="menu-item submenu-item block pl-5 pr-4 py-3 rounded-lg text-gray-600 hover:text-gray-800 flex items-center space-x-3 <?php echo ($current_page == 'mitra') ? 'active' : ''; ?>">
                             <div class="w-3 flex justify-center">

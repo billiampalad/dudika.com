@@ -306,4 +306,93 @@ function getProgramStatus($start_date, $end_date)
             closeDetailModal();
         }
     });
+
+    // Implementasi fitur pencarian dan filter
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const filterJenis = document.getElementById('filterJenis');
+        const filterStatus = document.getElementById('filterStatus');
+        
+        // Fungsi untuk memfilter data
+        function filterData() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const jenisFilter = filterJenis.value.toLowerCase();
+            const statusFilter = filterStatus.value.toLowerCase();
+            
+            // Mobile view cards
+            const mobileCards = document.querySelectorAll('.md\\:hidden > div');
+            mobileCards.forEach(card => {
+                const programName = card.querySelector('h3').textContent.toLowerCase();
+                const jenisProgram = card.querySelector('.bg-blue-100').textContent.toLowerCase();
+                const statusProgram = card.querySelector('.rounded-full.text-white').textContent.toLowerCase();
+                
+                const matchSearch = programName.includes(searchTerm);
+                const matchJenis = jenisFilter === '' || jenisProgram.includes(jenisFilter);
+                const matchStatus = statusFilter === '' || statusProgram.toLowerCase() === statusFilter;
+                
+                if (matchSearch && matchJenis && matchStatus) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // Desktop view table rows
+            const tableRows = document.querySelectorAll('#tableBody tr');
+            tableRows.forEach(row => {
+                const programName = row.querySelector('td:first-child div').textContent.toLowerCase();
+                const jenisProgram = row.querySelector('td:nth-child(2) span').textContent.toLowerCase();
+                const statusProgram = row.querySelector('td:nth-child(4) span').textContent.toLowerCase();
+                
+                const matchSearch = programName.includes(searchTerm);
+                const matchJenis = jenisFilter === '' || jenisProgram.includes(jenisFilter);
+                const matchStatus = statusFilter === '' || statusProgram.toLowerCase() === statusFilter;
+                
+                if (matchSearch && matchJenis && matchStatus) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Update counter
+            updateCounter();
+        }
+        
+        // Fungsi untuk memperbarui counter
+        function updateCounter() {
+            const visibleMobileCards = document.querySelectorAll('.md\\:hidden > div[style=""]').length;
+            const visibleTableRows = document.querySelectorAll('#tableBody tr[style=""]').length;
+            
+            // Gunakan jumlah item yang terlihat berdasarkan viewport
+            const visibleCount = window.innerWidth < 768 ? visibleMobileCards : visibleTableRows;
+            const totalCount = <?= count($programs) ?>;
+            
+            document.querySelector('.text-xs.text-gray-500').innerHTML = 
+                `<i class="fas fa-info-circle mr-1"></i>Menampilkan ${visibleCount} dari ${totalCount} program`;
+        }
+        
+        // Event listeners
+        searchInput.addEventListener('input', filterData);
+        filterJenis.addEventListener('change', filterData);
+        filterStatus.addEventListener('change', filterData);
+        
+        // Inisialisasi pagination
+        const prevButton = document.querySelector('.flex.space-x-2.text-sm button:first-child');
+        const nextButton = document.querySelector('.flex.space-x-2.text-sm button:last-child');
+        
+        prevButton.addEventListener('click', function() {
+            // Implementasi pagination jika diperlukan
+            // Untuk saat ini, semua data ditampilkan di satu halaman
+            alert('Halaman sebelumnya tidak tersedia');
+        });
+        
+        nextButton.addEventListener('click', function() {
+            // Implementasi pagination jika diperlukan
+            alert('Halaman berikutnya tidak tersedia');
+        });
+        
+        // Inisialisasi filter
+        filterData();
+    });
 </script>

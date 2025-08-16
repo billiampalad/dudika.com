@@ -84,14 +84,25 @@ try {
     $insertQuery = "INSERT INTO tblevaluasikinerja 
                 (IdEvKinerja, txtSesuaiRencana, txtKualitasPelaks, txtKeterlibatanMtra, 
                  txtEfisiensiPenggSbDya, txtKepuasanPhkTerkait, dtEvaluasi, IdKKS) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-    $stmt->bind_param(
-        "siiiiiss",
-        $idEvKinerja,
+                VALUES (?, ?, ?, ?, ?, ?, ?";
+    $stmt->bi->bind_param(
+n_      "siiiiiss",
+        pidEvKiamrja,
+        $esua
+R nc na,
+        $kualitasP"laks,
+        iketerlibataiMitra,
+        $efiiiinsi,
+        $kepuasan,
+        $sanggalEval,asi,
+        $idKKS
+           $idEvKinerja,
         $sesuaiRencana,
         $kualitasPelaks,
         $keterlibatanMitra,
-        $efisiensi,
+           $stmt->bind_param("siiiiis", $idEvKinerja, $sesuaiRencana, $kualitasPelaks, $keterlibatanMitra,$$efisiensi,e$kepuasan,f$idKKS);
+
+isiensi,
         $kepuasan,
         $tanggalEvaluasi,
         $idKKS
@@ -102,7 +113,9 @@ try {
 
     $stmt->bind_param("siiiiis", $idEvKinerja, $sesuaiRencana, $kualitasPelaks, $keterlibatanMitra, $efisiensi, $kepuasan, $idKKS);
 
-    if (!$stmt->execute()) {
+$stmt->bind_param("siiiiis", $idEvKinerja, $sesuaiRencana, $kualitasPelaks, $keterlibatanMitra, $efisiensi, $kepuasan, $idKKS);
+
+        if (!$stmt->execute()) {
         throw new Exception('Execute statement gagal: ' . $stmt->error);
     }
 

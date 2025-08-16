@@ -108,14 +108,14 @@ function hasBuktiPelaksanaan($blobData) {
         <div class="text-[10px] sm:text-xs text-gray-500">
             <i class="fas fa-info-circle mr-1"></i>Menampilkan <?= count($programs) ?> dari <?= count($programs) ?> program
         </div>
-        <div class="flex space-x-1 sm:space-x-2">
-            <button class="px-2 sm:px-3 py-1 border border-[var(--border)] rounded hover:bg-[var(--border)] text-[var(--text-light)] text-xs sm:text-sm">
+        <div class="flex space-x-1 sm:space-x-2" id="paginationContainer">
+            <button id="prevPageBtn" class="px-2 sm:px-3 py-1 border border-[var(--border)] rounded hover:bg-[var(--border)] text-[var(--text-light)] text-xs sm:text-sm">
                 Previous
             </button>
             <button class="px-2 sm:px-3 py-1 bg-[var(--primary)] text-white rounded font-semibold text-xs sm:text-sm">
                 1
             </button>
-            <button class="px-2 sm:px-3 py-1 border border-[var(--border)] rounded hover:bg-[var(--border)] text-[var(--text-light)] text-xs sm:text-sm">
+            <button id="nextPageBtn" class="px-2 sm:px-3 py-1 border border-[var(--border)] rounded hover:bg-[var(--border)] text-[var(--text-light)] text-xs sm:text-sm">
                 Next
             </button>
         </div>
@@ -205,6 +205,12 @@ function hasBuktiPelaksanaan($blobData) {
             document.getElementById('modalKegiatanTitle').textContent = program.txtNamaKegiatanKS;
             document.getElementById('modalKegiatanPeriode').textContent = `Periode: ${formatJsDate(program.dtMulaiPelaksanaan)} - ${formatJsDate(program.dtSelesaiPelaksanaan)}`;
             
+            // Isi form dengan data yang sudah ada (jika ada)
+            if (program.txtDeskripsiKeg) document.getElementById('txtDeskripsiKeg').value = program.txtDeskripsiKeg;
+            if (program.txtCakupanDanSkalaKeg) document.getElementById('txtCakupanDanSkalaKeg').value = program.txtCakupanDanSkalaKeg;
+            if (program.intJumlahPeserta) document.getElementById('intJumlahPeserta').value = program.intJumlahPeserta;
+            if (program.txtSumberDaya) document.getElementById('txtSumberDaya').value = program.txtSumberDaya;
+            
             // Show modal with animation
             document.getElementById('laporanModal').classList.remove('hidden');
             setTimeout(() => {
@@ -229,7 +235,7 @@ function hasBuktiPelaksanaan($blobData) {
 
     // Function to export data
     function exportData() {
-        // This would typically make an AJAX call to generate an Excel file
+        // Redirect to export_excel.php to generate Excel file
         window.location.href = 'export_excel.php';
     }
 
@@ -237,6 +243,35 @@ function hasBuktiPelaksanaan($blobData) {
     function formatJsDate(dateString) {
         const options = { day: 'numeric', month: 'long', year: 'numeric' };
         return new Date(dateString).toLocaleDateString('id-ID', options);
+    }
+    
+    // Function to filter table based on search input
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        const searchText = this.value.toLowerCase();
+        const tableRows = document.querySelectorAll('tbody tr');
+        
+        tableRows.forEach(row => {
+            const nameCell = row.querySelector('td:first-child').textContent.toLowerCase();
+            if (nameCell.includes(searchText)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // Update counter
+        updateDisplayCounter();
+    });
+    
+    // Function to update the display counter
+    function updateDisplayCounter() {
+        const tableRows = document.querySelectorAll('tbody tr');
+        const visibleRows = document.querySelectorAll('tbody tr:not([style*="display: none"])');
+        const counterElement = document.querySelector('.text-[10px].sm\:text-xs.text-gray-500');
+        
+        if (counterElement) {
+            counterElement.innerHTML = `<i class="fas fa-info-circle mr-1"></i>Menampilkan ${visibleRows.length} dari ${tableRows.length} program`;
+        }
     }
 
     // Form submission handler
@@ -269,4 +304,98 @@ function hasBuktiPelaksanaan($blobData) {
             alert('Terjadi kesalahan saat menyimpan laporan');
         }
     });
+    
+    // Pagination functionality
+    const rowsPerPage = 10;
+    let currentPage = 1;
+    const tableRows = document.querySelectorAll('tbody tr');
+    const totalPages = Math.ceil(tableRows.length / rowsPerPage);
+    
+    // Initialize pagination
+    function initPagination() {
+        // Create page buttons
+        updatePaginationButtons();
+        
+        // Show first page initially
+        showPage(1);
+        
+        // Add event listeners to pagination buttons
+        document.getElementById('prevPageBtn').addEventListener('click', function() {
+            if (currentPage > 1) {
+                showPage(currentPage - 1);
+            }
+        });
+        
+        document.getElementById('nextPageBtn').addEventListener('click', function() {
+            if (currentPage < totalPages) {
+                showPage(currentPage + 1);
+            }
+        });
+    }
+    
+    // Function to show specific page
+    function showPage(pageNum) {
+        currentPage = pageNum;
+        
+        // Hide all rows
+        tableRows.forEach(row => {
+            row.style.display = 'none';
+        });
+        
+        // Show rows for current page
+        const startIndex = (pageNum - 1) * rowsPerPage;
+        const endIndex = Math.min(startIndex + rowsPerPage, tableRows.length);
+        
+        for (let i = startIndex; i < endIndex; i++) {
+            if (tableRows[i]) {
+                tableRows[i].style.display = '';
+            }
+        }
+        
+        // Update pagination buttons
+        updatePaginationButtons();
+        
+        // Update counter
+        updateDisplayCounter();
+    }
+    
+    // Function to update pagination buttons
+    function updatePaginationButtons() {
+        const paginationContainer = document.getElementById('paginationContainer');
+        
+        // Clear existing page number buttons
+        const pageButtons = paginationContainer.querySelectorAll('button:not(#prevPageBtn):not(#nextPageBtn)');
+        pageButtons.forEach(btn => btn.remove());
+        
+        // Add page number buttons
+        const prevBtn = document.getElementById('prevPageBtn');
+        
+        for (let i = 1; i <= totalPages; i++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.textContent = i;
+            pageBtn.classList.add('px-2', 'sm:px-3', 'py-1', 'rounded', 'text-xs', 'sm:text-sm');
+            
+            if (i === currentPage) {
+                pageBtn.classList.add('bg-[var(--primary)]', 'text-white', 'font-semibold');
+            } else {
+                pageBtn.classList.add('border', 'border-[var(--border)]', 'hover:bg-[var(--border)]', 'text-[var(--text-light)]');
+            }
+            
+            pageBtn.addEventListener('click', function() {
+                showPage(i);
+            });
+            
+            paginationContainer.insertBefore(pageBtn, document.getElementById('nextPageBtn'));
+        }
+        
+        // Update prev/next button states
+        document.getElementById('prevPageBtn').disabled = currentPage === 1;
+        document.getElementById('nextPageBtn').disabled = currentPage === totalPages;
+    }
+    
+    // Initialize pagination when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        initPagination();
+    });
+
 </script>

@@ -278,7 +278,7 @@ if (!$result_history) {
             submitButton.classList.add('hidden');
 
             // Ambil data evaluasi yang sudah ada
-            fetch(`get_evaluasi.php?id=${idKKS}`)
+            fetch(`user/get_evaluasi.php?id=${idKKS}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === 'success') {

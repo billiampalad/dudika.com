@@ -20,10 +20,13 @@ $sql = "
         txtEfisiensiPenggSbDya,
         txtKepuasanPhkTerkait
     FROM tblevaluasikinerja 
-    WHERE IdKKS = '$idKKS'
+    WHERE IdKKS = ?
 ";
 
-$result = $koneksi->query($sql);
+$stmt = $koneksi->prepare($sql);
+$stmt->bind_param("s", $idKKS);
+$stmt->execute();
+$result = $stmt->get_result();
 
 if (!$result) {
     error_log("Error query: " . $koneksi->error);
