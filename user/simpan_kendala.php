@@ -1,42 +1,84 @@
 <?php
 header('Content-Type: application/json');
-require_once '/config/koneksi.php';
+
+// Pastikan semua output adalah JSON yang valid
+error_reporting(E_ALL);
+ini_set('display_errors', 0); // Jangan tampilkan error PHP di output
+
+require_once '../config/koneksi.php';
 session_start();
 
-if (!isset($_SESSION['nik']) || $_SESSION['role'] !== 'polimdo') {
-    echo json_encode(['status' => 'error', 'message' => 'Akses ditolak.']);
+// 1. Validasi Sesi Pengguna
+// Periksa apakah user sudah login
+if (!isset($_SESSION['nik'])) {
+    echo json_encode(['status' => 'error', 'message' => 'Akses ditolak. Silakan login terlebih dahulu.']);
     exit;
 }
 
-// Ambil dan bersihkan data
-$idKKS = isset($_POST['IdKKS']) ? $koneksi->real_escape_string($_POST['IdKKS']) : '';
-$kendala = isset($_POST['txtKendala']) ? $koneksi->real_escape_string($_POST['txtKendala']) : '';
-$solusi = isset($_POST['txtUpayaUtkAtasiMslh']) ? $koneksi->real_escape_string($_POST['txtUpayaUtkAtasiMslh']) : '';
+// Tangkap semua error dan konversi ke JSON
+try {
 
-if (empty($idKKS) || empty($kendala)) {
-    echo json_encode(['status' => 'error', 'message' => 'Kegiatan dan deskripsi kendala wajib diisi.']);
+// 2. Ambil dan Validasi Data Input
+$idKKS = isset($_POST['IdKKS']) ? trim($_POST['IdKKS']) : '';
+$kendala = isset($_POST['txtKendala']) ? trim($_POST['txtKendala']) : '';
+$solusi = isset($_POST['txtUpayaUtkAtasiMslh']) ? trim($_POST['txtUpayaUtkAtasiMslh']) : '';
+$urgensi = isset($_POST['urgensi']) ? trim($_POST['urgensi']) : 'rendah';
+
+// Validasi urgensi agar nilainya sesuai yang diharapkan
+$allowed_urgensi = ['rendah', 'sedang', 'tinggi'];
+if (!in_array($urgensi, $allowed_urgensi)) {
+    $urgensi = 'rendah'; // Default jika nilai tidak valid
+}
+
+if (empty($idKKS)) {
+    echo json_encode(['status' => 'error', 'message' => 'Silakan pilih program kerjasama terlebih dahulu.']);
+    exit;
+}
+if (empty($kendala)) {
+    echo json_encode(['status' => 'error', 'message' => 'Kolom "Deskripsikan Kendala" wajib diisi.']);
+    exit;
+}
+if (strlen($kendala) > 1000) { // Contoh validasi panjang karakter
+    echo json_encode(['status' => 'error', 'message' => 'Deskripsi kendala terlalu panjang (maks 1000 karakter).']);
     exit;
 }
 
-// Generate ID unik
-$idMslhDanSolusi = 'MSL' . str_pad((rand(100, 999)), 3, '0', STR_PAD_LEFT);
+// 3. Generate ID Unik yang Lebih Andal
+$idMslhDanSolusi = 'MSL' . strtoupper(substr(md5(uniqid(rand(), true)), 0, 12));
 
 // Teks default untuk kolom yang tidak ada di form
 $rekomendasi = "Menunggu diskusi lebih lanjut.";
+$status = "diproses"; // Status default saat laporan baru dibuat
 
+// 4. Gunakan Prepared Statement untuk Keamanan
 $stmt = $koneksi->prepare(
     "INSERT INTO tblpermasalahandansolusi 
-    (IdMslhDanSolusi, txtKendala, txtUpayaUtkAtasiMslh, txtRekomUtkPerbaikan, IdKKS) 
-    VALUES (?, ?, ?, ?, ?)"
+    (IdMslhDanSolusi, txtKendala, txtUpayaUtkAtasiMslh, txtRekomUtkPerbaikan, IdKKS, urgensi, status) 
+    VALUES (?, ?, ?, ?, ?, ?, ?)"
 );
-$stmt->bind_param("sssss", $idMslhDanSolusi, $kendala, $solusi, $rekomendasi, $idKKS);
 
+if ($stmt === false) {
+    error_log("Prepare failed: " . $koneksi->error);
+    echo json_encode(['status' => 'error', 'message' => 'Terjadi kesalahan pada server.']);
+    exit;
+}
+
+$stmt->bind_param("sssssss", $idMslhDanSolusi, $kendala, $solusi, $rekomendasi, $idKKS, $urgensi, $status);
+
+// 5. Eksekusi dan Berikan Respon
 if ($stmt->execute()) {
-    echo json_encode(['status' => 'success']);
+    echo json_encode(['status' => 'success', 'message' => 'Laporan kendala berhasil dikirim!']);
 } else {
-    echo json_encode(['status' => 'error', 'message' => 'Gagal menyimpan ke database.']);
+    error_log("Execute failed: " . $stmt->error);
+    echo json_encode(['status' => 'error', 'message' => 'Gagal menyimpan data ke database.']);
 }
 
 $stmt->close();
 $koneksi->close();
+
+} catch (Exception $e) {
+    // Tangkap semua error dan kembalikan sebagai JSON
+    error_log("Error in simpan_kendala.php: " . $e->getMessage());
+    echo json_encode(['status' => 'error', 'message' => 'Terjadi kesalahan pada server.']);
+}
 ?>

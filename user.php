@@ -161,28 +161,84 @@ if (!in_array($current_page, $valid_pages)) {
                 <div class="card-modern p-4">
                     <h4 class="font-bold text-sm text-gray-800 mb-3">Statistik Singkat</h4>
                     <div class="space-y-2">
+                        <?php
+                        // Mendapatkan NIK pengguna yang sedang login
+                        $loggedInNik = $_SESSION['nik'] ?? '';
+                        
+                        // Query untuk mendapatkan ID Mitra berdasarkan NIK
+                        $mitraQuery = "SELECT IdMitraDudika FROM tblmitradudika WHERE nik = ?";
+                        $mitraStmt = $koneksi->prepare($mitraQuery);
+                        $mitraStmt->bind_param("s", $loggedInNik);
+                        $mitraStmt->execute();
+                        $mitraResult = $mitraStmt->get_result();
+                        $mitraData = $mitraResult->fetch_assoc();
+                        $mitraStmt->close();
+                        
+                        $idMitra = $mitraData['IdMitraDudika'] ?? '';
+                        
+                        // Query untuk statistik kegiatan
+                        $statsQuery = "SELECT 
+                            SUM(CASE 
+                                WHEN CURDATE() BETWEEN dtMulaiPelaksanaan AND dtSelesaiPelaksanaan THEN 1 
+                                ELSE 0 
+                            END) as aktif,
+                            SUM(CASE 
+                                WHEN dtSelesaiPelaksanaan < CURDATE() THEN 1 
+                                ELSE 0 
+                            END) as selesai,
+                            SUM(CASE 
+                                WHEN CURDATE() BETWEEN dtMulaiPelaksanaan AND dtSelesaiPelaksanaan 
+                                AND dtSelesaiPelaksanaan <= DATE_ADD(CURDATE(), INTERVAL 30 DAY) THEN 1 
+                                ELSE 0 
+                            END) as akan_berakhir,
+                            SUM(CASE 
+                                WHEN dtMulaiPelaksanaan > CURDATE() THEN 1 
+                                ELSE 0 
+                            END) as belum_mulai
+                        FROM tblnamakegiatanks";
+                        
+                        // Tambahkan filter berdasarkan mitra jika pengguna adalah mitra
+                        if (!empty($idMitra)) {
+                            $statsQuery .= " WHERE IdMitraDudika = ?";
+                            $statsStmt = $koneksi->prepare($statsQuery);
+                            $statsStmt->bind_param("s", $idMitra);
+                        } else {
+                            $statsStmt = $koneksi->prepare($statsQuery);
+                        }
+                        
+                        $statsStmt->execute();
+                        $statsResult = $statsStmt->get_result();
+                        $stats = $statsResult->fetch_assoc();
+                        $statsStmt->close();
+                        
+                        // Menggunakan nilai default 0 jika tidak ada data
+                        $aktif = $stats['aktif'] ?? 0;
+                        $selesai = $stats['selesai'] ?? 0;
+                        $akanBerakhir = $stats['akan_berakhir'] ?? 0;
+                        $belumMulai = $stats['belum_mulai'] ?? 0;
+                        ?>
                         <div class="flex justify-between items-center">
                             <span class="text-xs text-gray-800">Aktif</span>
                             <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-200 text-green-900">
-                                1
+                                <?php echo $aktif; ?>
                             </span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-xs text-gray-800">Selesai</span>
                             <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-200 text-blue-900">
-                                2
+                                <?php echo $selesai; ?>
                             </span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-xs text-gray-800">Akan Berakhir</span>
                             <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-200 text-yellow-900">
-                                0
+                                <?php echo $akanBerakhir; ?>
                             </span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-xs text-gray-800">Belum Mulai</span>
                             <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-200 text-red-900">
-                                2
+                                <?php echo $belumMulai; ?>
                             </span>
                         </div>
                     </div>
